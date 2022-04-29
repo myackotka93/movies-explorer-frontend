@@ -1,0 +1,30 @@
+.navtab {
+	display: flex;
+}
+
+.navtab__element {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 96px;
+  height: 36px;
+  background-color: #E8E8E8;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  color:#000000;
+  margin-right: 10px;
+  margin-bottom: 30px;
+  font-size: 12px;
+	line-height: 16px;
+  font-weight: 500;
+}
+
+.navtab__element:hover {
+	opacity: 0.6;
+	transition-duration: 1s;
+}
+
+.navtab__element:last-child {
+	margin-right: 0;
+}
