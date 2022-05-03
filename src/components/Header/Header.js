@@ -7,7 +7,7 @@ export const Header = () => {
       <div className="header__logo"/>
       <div className="header__wrapper">
          <button className="header__link">Регистрация</button>
-				 <button className="header__link">Войти</button>
+				 <button className="header__link_type_button">Войти</button>
       </div>
     </header>
   );

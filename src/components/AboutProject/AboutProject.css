@@ -10,8 +10,8 @@
   margin: 70px 70px 110px 70px;
   display: grid;
   grid-template-columns: 550px 550px;
-  grid-row-gap: 40px;
-  grid-column-gap: 26px;
+  grid-row-gap: 26px;
+  grid-column-gap: 40px;
 }
   
 .about-project__title {
@@ -19,6 +19,7 @@
   font-weight: normal;
   font-size: 20px;
   line-height: 24px;
+  letter-spacing: -0.04em;
 }
 
 .about-project__subtitle {
