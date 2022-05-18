@@ -23,11 +23,12 @@
 }
   
 .about-project__wrapper {
-  margin: 70px 70px 110px 70px;
+  margin: 70px auto 110px auto;
   display: grid;
   grid-template-columns: 550px 550px;
   grid-row-gap: 26px;
   grid-column-gap: 40px;
+  max-width: 1140px;
 }
 
 @media screen and (max-width: 1279px) and (min-width: 768px) {

@@ -22,6 +22,23 @@
   border: none;
 }
 
+@media screen and (max-width: 768px) {
+	.navtab__element {
+		margin-bottom: 30px;
+	}
+}
+
+@media screen and (max-width: 450px) {
+	.navtab__element {
+		margin-bottom: 17px;
+		margin-right: 6px;
+		width: 82px;
+    height: 26px;
+		font-size: 10px;
+    line-height: 16px;
+	}
+}
+
 .navtab__element:hover {
 	opacity: 0.6;
 	transition-duration: 1s;

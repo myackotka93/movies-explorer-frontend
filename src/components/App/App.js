@@ -14,8 +14,8 @@ export const App = () => {
   return (
     <div className="app">
       <Header />
-      {/* <Main /> */}
-      <Movies/>
+      <Main />
+      {/* <Movies/> */}
       {/* <SavedMovies/> */}
       {/* <Profile/> */}
       {/* <Register/> */}

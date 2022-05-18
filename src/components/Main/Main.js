@@ -8,10 +8,10 @@ import { Tech } from '../Tech/Tech';
 export const Main = () => {
 	return (
 		<>
-			<Promo />
+			{/* <Promo />
 			<AboutProject />
 			<Tech />
-			<AboutMe />
+			<AboutMe /> */}
 			<Portfolio />
 		</>
 	);
