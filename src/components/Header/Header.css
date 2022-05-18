@@ -6,6 +6,18 @@
   align-items: center;
 }
 
+@media screen and (max-width: 1279px) and (min-width: 768px) {
+  .header {
+    width: calc(100% - 60px);
+  }
+}
+
+@media screen and (max-width: 767px) and (min-width: 300px) {
+  .header {
+    width: calc(100% - 28px);
+  }
+}
+
 .header__logo {
   background-image: url(../../images/logo.svg);
   width: 38px;
@@ -35,6 +47,7 @@
 .header__link_type_button {
   width: 76px;
   height: 32px;
+  font-size: 12px;
   background-color: #3DDC84;
   color: #000;
   border-radius: 3px;

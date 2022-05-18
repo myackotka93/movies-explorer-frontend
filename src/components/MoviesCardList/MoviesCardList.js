@@ -24,7 +24,7 @@ export const MoviesCardList = () => {
 				time="1ч 47м"/>
 				<MoviesCard
 				img={img2}
-				title="33 слова о дизайне»"
+				title="33 слова о дизайне"
 				time="1ч 47м"/>
 				<MoviesCard
 				img={img3}
