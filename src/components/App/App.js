@@ -9,13 +9,15 @@ import { Login } from "../Login/Login";
 import { NotFound } from "../NotFound/NotFound";
 import { Header } from "../Header/Header";
 import { Footer } from "../Footer/Footer";
+import React from "react";
+import { Route, Switch } from 'react-router-dom';
 
 export const App = () => {
   return (
     <div className="app">
       <Header />
-      <Main />
-      {/* <Movies/> */}
+      {/* <Main /> */}
+      <Movies/>
       {/* <SavedMovies/> */}
       {/* <Profile/> */}
       {/* <Register/> */}

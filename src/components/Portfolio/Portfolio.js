@@ -4,24 +4,25 @@ import image from '../../images/portfolio__image.svg';
 
 export const Portfolio = () => {
 	return (
-		<section className="portfolio">
-			<h2 className="portfolio__title">Портфолио</h2>
-			<nav className="portfolio__group">
-				<ul className="portfolio__list">
-					<li className="portfolio__item">
-						<p className="portfolio__heading">Статичный сайт</p>
-						<a className="portfolio__link" rel="noreferrer" target="_blank" href="#"><img className="portfolio__image" src={image} alt="Ссылка"/></a>
-					</li>
-					<li className="portfolio__item">
-						<p className="portfolio__heading">Адаптивный сайт</p>
-						<a className="portfolio__link" rel="noreferrer" target="_blank" href="#"><img className="portfolio__image" src={image} alt="Ссылка"/></a>
-					</li>
-					<li className="portfolio__item">
-						<p className="portfolio__heading">Одностраничное приложение</p>
-						<a className="portfolio__link" rel="noreferrer" target="_blank" href="#"><img className="portfolio__image" src={image} alt="Ссылка"/></a>
-					</li>
-				</ul>
-			</nav>
-		</section>
+    <section className='portfolio'>
+      <h4 className='portfolio__title'>Портфолио</h4>
+      <ul className='portfolio__item'>
+        <li className='portfolio__item-element'>
+          <a className='portfolio__item-text'
+          href='#' rel="noreferrer" target="_blank">Статичный сайт</a>
+          <img className='portfolio__item-img' alt='Стрелка' src={image} />
+        </li>
+        <li className='portfolio__item-element'>
+          <a className='portfolio__item-text '
+          href='#' rel="noreferrer" target="_blank">Адаптивный сайт</a>
+          <img className='portfolio__item-img' alt='Стрелка' src={image} />
+        </li>
+        <li className='portfolio__item-element'>
+          <a className='portfolio__item-text'
+          href='#' rel="noreferrer" target="_blank">Одностраничное приложение</a>
+          <img className='portfolio__item-img' alt='Стрелка' src={image} />
+        </li>
+      </ul>            
+    </section>
 	);
 }

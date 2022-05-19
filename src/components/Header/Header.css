@@ -22,6 +22,7 @@
   background-image: url(../../images/logo.svg);
   width: 38px;
   height: 38px;
+  cursor: pointer;
 }
 
 .header__logo:hover {
@@ -42,6 +43,7 @@
   margin-right: 30px;
   border: none;
   background-color: #fff;
+  cursor: pointer;
 }
 
 .header__link_type_button {
@@ -55,4 +57,5 @@
   align-items: center;
   justify-content: center;
   border: none;
+  cursor: pointer;
 }
