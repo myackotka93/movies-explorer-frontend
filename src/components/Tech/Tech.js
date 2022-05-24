@@ -5,7 +5,9 @@ import './Tech.css';
 export const Tech = () => {
   return (
     <section className="tech">
-      <Heading name="Технологии"/>
+      <Heading 
+        name="Технологии"
+        id="tech"/>
       <h2 className="tech__title">7 технологий</h2>
       <p className="tech__subtitle">На курсе веб-разработки мы освоили технологии, которые применили в дипломном проекте.</p>
       <ul className="tech__list">

@@ -79,13 +79,6 @@
   line-height: 20px;
 }
 
-@media screen and (max-width: 768px) {
-	.about-project__subtitle {
-		font-size: 12px;
-		line-height: 18px;
-	}
-}
-
 @media screen and (max-width: 767px) and (min-width: 300px) {
 	.about-project__subtitle:last-of-type {
 		grid-row: 4/4;

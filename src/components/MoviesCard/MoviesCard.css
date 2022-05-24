@@ -32,14 +32,33 @@
 }
 
 .movies-card__button {
-  background-image: url(../../images/button__save.svg);
+  background-image: url(../../images/button__save_inactive.svg);
   width: 30px;
   height: 30px;
   border-radius: 50%;
   border: none;
 }
 
+.movies-card__button_save_active {
+  background-image: url(../../images/button__save_active.svg);
+}
+
 .movies-card__button:hover {    
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.movies-card__button_delete_card {
+	background-image: url(../../images/button__delete.svg);
+	align-self: center;
+}
+
+.movies-card__button_delete_card {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.movies-card__button_delete_card:hover {    
   cursor: pointer;
   opacity: 0.8;
 }
@@ -60,10 +79,10 @@
   border: none;
 } */
 
-.movies-card__button_type_delete:hover {    
+/* .movies-card__button_type_delete:hover {    
   cursor: pointer;
   opacity: 0.8;
-}
+} */
 
 @media screen and (max-width: 768px) {
   .movies-card {

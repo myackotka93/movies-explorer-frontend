@@ -1,0 +1,155 @@
+.navigation {
+  width: 1058px;
+  display: flex;
+  justify-content: space-between;
+}
+  
+@media screen and (max-width: 1279px) and (min-width: 768px) {
+  .navigation{
+    width: 100%;  
+  }
+}
+  
+@media screen and (max-width: 767px) and (min-width: 300px) {
+  .navigation{
+    width: 100%;
+  }
+}
+  
+.navigation_without_signin {
+  display: block;
+}
+
+.navigation__link{
+  color: #000000;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 18px;
+  margin-right: 16px;
+  align-self: center;
+}
+
+.navigation__link:hover {
+	opacity: 0.6;
+	transition-duration: 1s;
+}
+
+.navigation__link_active {
+  font-weight: 500;
+}
+
+.navigation__link:last-of-type {
+  margin-right: 0;
+}
+
+.navigation__link_type_button {
+  width: 76px;
+  height: 32px;
+  background-color: #3DDC84;
+  color:#000;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media screen and (max-width: 450px) {
+  .navigation__link_type_button{
+    width: 54px;
+    height: 26px;
+  }
+}
+
+.navigation__wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.navigation__wrapper_without_signin {
+  justify-content: flex-end;
+}
+
+@media screen and (max-width: 1279px) and (min-width: 300px){
+  .navigation__wrapper_hidden {
+    display: none;
+  }
+}
+  
+.navigation__burger {
+  justify-content: flex-end;
+}
+  
+.popup {
+  position: fixed;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  display: none;
+  justify-content: flex-end;
+}
+  
+.popup__container {
+  width: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+  
+.popup__wrapper{
+  display: flex;
+  flex-direction: column;
+  margin-top: 159px;
+}
+
+.popup__wrapper_aligning{
+  justify-content: space-between;
+  flex-direction: row;
+  margin-bottom: 93px;
+}
+  
+.popup__link{
+  color: #000000;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 22px;
+  margin-bottom: 28px;
+  align-self: center;
+}
+  
+.popup__link_active{
+  padding-bottom: 4px;
+  border-bottom: 2px solid #000000;
+}
+
+.popup__link:last-of-type{
+  margin-bottom: 0;
+}
+  
+.popup__button{
+  background-image: url(../../images/button__close.svg);
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  background-color: transparent;
+  background-size: cover;
+  position: absolute;
+  top: 23px;
+  right: 23px;
+}
+
+.popup__button:hover {
+	opacity: 0.6;
+	transition-duration: 1s;
+}
+
+.popup_opened{
+  display: flex;
+}

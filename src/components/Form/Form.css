@@ -49,8 +49,8 @@
 	line-height: 17px;
 	background-color: transparent;
 	outline: none;
-  padding: 0 0 10px 0;
-  border-bottom: 2px solid #E8E8E8;
+	padding: 0 0 10px 0;
+	border-bottom: 2px solid #E8E8E8;
 }
 
 .form__input_error {

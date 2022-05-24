@@ -21,35 +21,38 @@ export const MoviesCardList = () => {
 			<MoviesCard
 				img={img1}
 				title="33 слова о дизайне"
-				time="1ч 47м"/>
+				time="1ч 47м" 
+        isLiked="true" />
 				<MoviesCard
 				img={img2}
 				title="33 слова о дизайне"
-				time="1ч 47м"/>
+				time="1ч 47м" />
 				<MoviesCard
 				img={img3}
 				title="33 слова о дизайне"
-				time="1ч 47м"/>
+				time="1ч 47м" />
 				<MoviesCard
 				img={img7}
 				title="33 слова о дизайне"
-				time="1ч 47м"/>
+				time="1ч 47м" 
+        isLiked="true" />
 				<MoviesCard
 				img={img8}
 				title="33 слова о дизайне"
-				time="1ч 47м"/>
+				time="1ч 47м" />
 				<MoviesCard
 				img={img9}
 				title="33 слова о дизайне"
-				time="1ч 47м"/>
+				time="1ч 47м" />
 				<MoviesCard
 				img={img4}
 				title="33 слова о дизайне"
-				time="1ч 47м"/>
+				time="1ч 47м" />
 				<MoviesCard
 				img={img5}
 				title="33 слова о дизайне"
-				time="1ч 47м"/>
+				time="1ч 47м"
+        isLiked="true" />
 				<MoviesCard
 				img={img6}
 				title="33 слова о дизайне"
