@@ -81,6 +81,7 @@
 }
   
 .popup {
+  background-color: rgba(0,0,0,0.3);
   position: fixed;
   z-index: 2;
   width: 100%;
@@ -92,6 +93,7 @@
 }
   
 .popup__container {
+  background-color: #FFFFFF;
   width: 520px;
   display: flex;
   flex-direction: column;
