@@ -54,15 +54,15 @@
   color: #A0A0A0;	
 }
 
+
+
 .search__input:focus{
 	border: 1.5px solid #2BE080;
 }
 
-
 .search__input::placeholder {
   transform: translateX(35px);
 }
-
 
 .search__button {
   width: 34px;
@@ -77,6 +77,12 @@
   background-image: url('../../images/search-form__button.svg');
   cursor: pointer;
 }
+
+.search__button:hover {
+  opacity: 0.6;
+  transition-duration: 1s;
+}
+
 
 @media screen and (max-width: 767px) {
   .search__button {

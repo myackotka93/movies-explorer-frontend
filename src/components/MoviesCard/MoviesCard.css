@@ -63,27 +63,6 @@
   opacity: 0.8;
 }
 
-/* .movies-card__button_type_delete {
-  background-image: url(../../images/button__delete.svg);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-} */
-
-/* .movies-card__button_type_saved {
-  background-image: url(../../images/button__saved.svg);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-} */
-
-/* .movies-card__button_type_delete:hover {    
-  cursor: pointer;
-  opacity: 0.8;
-} */
-
 @media screen and (max-width: 768px) {
   .movies-card {
       max-width: 339px;

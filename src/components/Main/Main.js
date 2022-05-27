@@ -19,8 +19,8 @@ export const Main = (props) => {
 			<Promo />
 			<AboutProject />
 			<Tech />
-			{/* <AboutMe /> */}
-			{/* <Portfolio /> */}
+			<AboutMe />
+			<Portfolio />
 		</main>
 	);
 }

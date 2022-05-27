@@ -94,7 +94,7 @@
 
 @media screen and (max-width: 1279px) and (min-width: 768px) {
 	.deadlines {
-		grid-template-columns: 1fr 3.8fr;
+		grid-template-columns:  0.86fr 1.6fr;
 		margin: 0 0 90px 0;
 		width: 100%;
 	}
