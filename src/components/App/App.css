@@ -1,7 +1,6 @@
 .app {
   width: 100%;
   margin: 0 auto;
-  min-width: 320px;
   max-width: 1280px;
   font-family: 'Inter', Arial, sans-serif, Helvetica;
 }
