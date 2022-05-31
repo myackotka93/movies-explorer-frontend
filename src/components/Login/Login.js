@@ -3,8 +3,26 @@ import { Form } from '../Form/Form';
 import { Input } from '../Input/Input';
 
 export const Login = (props) => {
+
+  const [email, setEmail] = React.useState('');
+	const [password, setPassword] = React.useState('');
+
+	function handleEmail(e) {
+		setEmail(e.target.value);
+	}
+
+	function handlePassword(e) {
+		setPassword(e.target.value);
+	}
+
+	function handleSubmit(e) {
+		e.preventDefault();
+		props.onLogin(email, password);
+	}
+
 	return (
-		<Form 
+		<Form
+      onSubmit={handleSubmit}
 			title="Рады видеть!"
 			typeLink="Регистрация"
 			to="/signup"
@@ -13,6 +31,8 @@ export const Login = (props) => {
 			onIsHidden={props.onIsHidden}>
         <div className="form__wrapper">
           <Input
+            onChange={handleEmail}
+            value={email}
             className="form__input"
             type="email"
             minLength="2"
@@ -21,6 +41,8 @@ export const Login = (props) => {
         </div>
         <div className="form__wrapper form__wrapper_for_login">
           <Input
+            onChange={handlePassword}
+            value={password}
             className="form__input"
             type="password"
             minLength="4"

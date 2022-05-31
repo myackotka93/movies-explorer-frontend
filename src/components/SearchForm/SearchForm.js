@@ -1,19 +1,31 @@
 import React from 'react';
+import { FilterCheckbox } from '../FilterCheckbox/FilterCheckbox';
 import './SearchForm.css';
 
-export const SearchForm = () => {
+export const SearchForm = (props) => {
+
+  const [keyValue, setKeyValue] = React.useState('');
+
+  function handleKeyValue(e) {
+		setKeyValue(e.target.value)
+	}
+
+	function handleSearch(e) {
+		e.preventDefault()
+		props.onGetFilms(keyValue)
+	}
+
 	return (
 		<section className="search">
-			<form className="search__form">
-				<input className="search__input" type="search" placeholder="Фильм" required></input>
+			<form className="search__form" onSubmit={handleSearch}>
+				<input className="search__input" type="search" placeholder="Фильм" onChange={handleKeyValue} value={keyValue} required></input>
         <div class="search__icon"></div>
-				<button className="search__button"></button>
+				<button className="search__button" type="submit"></button>
         <div class="search__vert-line"></div>
 				<div className="search__wrapper">
-          <label className="checkbox">
-            <input className="checkbox__input" type="checkbox" />
-            <span className="checkbox__switch"></span>
-          </label>
+          <FilterCheckbox
+            onIsDuration={props.onIsDuration}
+            isDuration={props.isDuration} />
           <label className="search__title">Короткометражки</label>
 				</div>
 			</form>
