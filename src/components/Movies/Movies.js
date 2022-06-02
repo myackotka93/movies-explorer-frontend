@@ -15,7 +15,10 @@ export const Movies = (props) => {
         onHandleMovieButton={props.onHandleMovieButton}
         savedMovies={props.savedMovies}
         component='movies'
-        onSetMovies={props.onSetMovies} />
+        onSetMovies={props.onSetMovies}
+        isLoading={props.isLoading}
+				onLoadedFilms={props.onLoadedFilms}
+				loadedFilms={props.loadedFilms} />
 		</>
 	);
 }

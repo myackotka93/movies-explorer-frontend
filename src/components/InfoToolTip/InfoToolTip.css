@@ -40,7 +40,7 @@
   }
   
   .modal-window__close {
-    background-image: url(../../images/close-icon.png);
+    background-image: url(../../images/button__close.svg);
     background-size: cover;
     position: absolute;
     top: -45px;

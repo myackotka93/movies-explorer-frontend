@@ -26,6 +26,8 @@ function App(props) {
   const [savedMovies, setSavedMovies] = React.useState([]);
   const [isOpenSuccess, setIsOpenSuccess] = React.useState(false);
   const [isOpenFail, setIsOpenFail] = React.useState(false);
+  const [isPreloader, setIsPreloader] = React.useState(false);
+  const [loadedFilms, setLoadedFilms] = React.useState(0);
 
   function modalClose(){
     setIsOpenSuccess(false)
@@ -105,10 +107,12 @@ function App(props) {
   }
 
   function getFilms() {
+    setIsPreloader(true)
     moviesApi.getFilms()
       .then((res) => {
         localStorage.setItem('movies', JSON.stringify(res));
-        console.log(res)
+        setMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('movies'))));
+        setIsPreloader(false);
       })
       .catch((err) => {
         console.log(err);
@@ -116,6 +120,7 @@ function App(props) {
   }
 
   function handleSavedMovies() {
+    setIsPreloader(true)
     mainApi.getFilms()
       .then((res) => {
         localStorage.setItem('savedMovies', JSON.stringify(res))
@@ -124,6 +129,8 @@ function App(props) {
       })
       .catch((err) => {
         console.log(err);
+        setSavedMovies(res)
+        setIsPreloader(false)
       });
   }
 
@@ -158,8 +165,9 @@ function App(props) {
   }
 
   function findFilms(keyValue) {
+    setLoadedFilms(0);
     handleSavedMovies()
-    if(!localStorage.getItem('movies')) {
+    if (!localStorage.getItem('movies')) {
       getFilms(keyValue);
     } else {
       setMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('movies'))))
@@ -168,7 +176,7 @@ function App(props) {
 
   function updateToSaveMovies(id) {
     const films = JSON.parse(localStorage.getItem('savedMovies'));
-    localStorage.setItem('savedMovies', JSON.stringify(films.filter((film)=>{return film.movieId !== id })))
+    localStorage.setItem('savedMovies', JSON.stringify(films.filter((film)=> { return film.movieId !== id })))
   }
 
   function findSavedMovies(keyValue) {
@@ -214,18 +222,21 @@ function App(props) {
               onHandleMovieButton={handleDeleteSavedMovie}
               onGetFilms={findSavedMovies}
               onFindByDuration={findByDuration}
-              onSetMovies={setSavedMovies} />
+              onSetMovies={setSavedMovies}
+              isLoading={isPreloader} />
             <ProtectedRoute
               path="/movies"
               component={Movies}
-              isSavedMovies={isSavedMovies}
               isAuth={isAuth}
               onGetFilms={findFilms}
               movies={movies}
               onSetMovies={setMovies}
               onHandleMovieButton={handlesavedMovie}
               savedMovies={savedMovies}
-              onFindByDuration={findByDuration} />
+              onFindByDuration={findByDuration}
+              isLoading={isPreloader} 
+              onLoadedFilms={setLoadedFilms}
+              loadedFilms={loadedFilms} />
             <ProtectedRoute
               path="/profile"
               component={Profile}
