@@ -4,9 +4,9 @@ export function searchMovies(keyValue, movies) {
     })
   }
   
-  export function searchMoviesByDuration(keyValue, movies) {
+  export function searchMoviesByDuration(movies) {
     return movies.filter((movie) => {
-      return movie.nameRU.toLowerCase().includes(keyValue.toLowerCase()) && movie.duration <= 40
+      return movie.nameRU.duration <= 40
     })
   }
   

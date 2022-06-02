@@ -7,12 +7,15 @@ export const Movies = (props) => {
 		<>
       <SearchForm
         onGetFilms={props.onGetFilms} 
-        onIsDuration={props.onIsDuration}
-        isDuration={props.isDuration} />
+				onFindByDuration={props.onFindByDuration}
+				movies={props.movies}
+				onSetMovies={props.onSetMovies} />
       <MoviesCardList
         movies={props.movies}
         onHandleMovieButton={props.onHandleMovieButton}
-        savedMovies={props.savedMovies} />
+        savedMovies={props.savedMovies}
+        component='movies'
+        onSetMovies={props.onSetMovies} />
 		</>
 	);
 }

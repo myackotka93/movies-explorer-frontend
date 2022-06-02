@@ -6,6 +6,7 @@ import { Profile } from "../Profile/Profile";
 import { Register } from "../Register/Register";
 import { Login } from "../Login/Login";
 import { NotFound } from "../NotFound/NotFound";
+import InfoToolTip from '../InfoToolTip/InfoToolTip';
 import { Header } from "../Header/Header";
 import { Footer } from "../Footer/Footer";
 import React from "react";
@@ -13,35 +14,41 @@ import * as mainApi from "../../utils/MainApi.js";
 import * as moviesApi from "../../utils/MoviesApi.js";
 import * as search from "../../utils/search.js";
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { ProtectedRoute } from "../ProtectedRoute";
+import { ProtectedRoute } from "../ProtectedRoute/ProtectedRoute";
 
 function App(props) {
 
   const [isAuth, setIsAuth] = React.useState(false);
-  const [isSavedMovies, setIsSavedMovies] = React.useState(true);
   const [isHidden, setIsHidden] = React.useState(true);
   const [isHiddenFooter, setIsHiddenFooter] = React.useState(true);
   const [movies, setMovies] = React.useState([]);
   const [currentUser, setCurrentUser] = React.useState({ name: "", email: "", id: "" });
-  const [isDurationMovies, setIsDurationMovies] = React.useState(false);
   const [savedMovies, setSavedMovies] = React.useState([]);
+  const [isOpenSuccess, setIsOpenSuccess] = React.useState(false);
+  const [isOpenFail, setIsOpenFail] = React.useState(false);
+
+  function modalClose(){
+    setIsOpenSuccess(false)
+    setIsOpenFail(false)
+  }
 
   function handleLink(boolean) {
     setIsAuth(boolean);
-}
+  }
 
-function handleRegister(name, email, password) {
+  function handleRegister(name, email, password) {
   auth.register(name, email, password)
     .then((res) => {
       props.history.push('/signin');
     })
     .catch((err) => {
-      console.log(err)
+      setIsOpenFail(true);
+      console.log(err);
     }
     );
-}
+  }
 
-function handleLogin(email, password) {
+  function handleLogin(email, password) {
   auth.authorize(email, password)
     .then((res) => {
       setIsAuth(true)
@@ -49,12 +56,13 @@ function handleLogin(email, password) {
       localStorage.setItem('auth', true);
     })
     .catch((err) => {
-      console.log(err)
+      setIsOpenFail(true);
+      console.log(err);
     }
     );
-}
+  }
 
-function handleTokenCheck() {
+  function handleTokenCheck() {
   if (localStorage.getItem('auth')) {
     mainApi.checkToken()
       .then((res) => {
@@ -66,34 +74,37 @@ function handleTokenCheck() {
       .catch((err) => {
         console.log(err)
       });
+    }
   }
-}
 
-function handleSignOut() {
+  function handleSignOut() {
   mainApi.signOut()
     .then((res) => {
       props.history.push('/signin');
       setIsAuth(false);
-      localStorage.removeItem('auth');
+      localStorage.removeItem('auth', 'movies', 'savedMovies');
+      localStorage.removeItem('movies');
+      localStorage.removeItem('savedMovies');
     })
     .catch((err) => {
       console.log(err)
     }
     );
-}
+  }
 
-function handleUpdateUser(data) {
+  function handleUpdateUser(data) {
   mainApi.setUserInfo(data.name, data.email)
     .then((res) => {
       setCurrentUser(res.data);
+      setIsOpenSuccess(true);
     })
     .catch((err) => {
+      setIsOpenFail(true)
       console.log(err);
     });
-}
+  }
 
-function getFilms() {
-  if(!localStorage.getItem('movies')){
+  function getFilms() {
     moviesApi.getFilms()
       .then((res) => {
         localStorage.setItem('movies', JSON.stringify(res));
@@ -103,20 +114,31 @@ function getFilms() {
         console.log(err);
       });
   }
-}
 
-function handleSavedMovies() {
-  mainApi.getFilms()
-    .then((res) => {
-      console.log(res)
-      setSavedMovies(res)
+  function handleSavedMovies() {
+    mainApi.getFilms()
+      .then((res) => {
+        localStorage.setItem('savedMovies', JSON.stringify(res))
+        console.log(res)
+        setSavedMovies(res)
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  function handleDeleteSavedMovie(movie) {
+  mainApi.movieDelete(movie.movieId)
+    .then(() => {
+      setSavedMovies((movies) => movies.filter((film) => film.movieId !== movie.movieId));
+      updateToSaveMovies(movie.movieId);
     })
     .catch((err) => {
       console.log(err);
     });
-}
+  }
 
-function handlesavedMovie(movie) {
+  function handlesavedMovie(movie) {
     const id = movie.id || movie.movieId;
     console.log(movie)
     const isLiked = savedMovies.some(item => item.movieId === id && item.owner === currentUser.id);
@@ -133,30 +155,47 @@ function handlesavedMovie(movie) {
       .catch((err) => {
         console.log(err);
       });
-}
-
-function findFilms(keyValue) {
-  handleSavedMovies()
-  getFilms();
-  search.handleSearch(keyValue, JSON.parse(localStorage.getItem('movies')), isDurationMovies, setMovies);
-}
-
-React.useEffect(() => {
-  handleTokenCheck();
-}, []);
-
-React.useEffect(() => {
-  if (isAuth) {
-    mainApi.getUserInfo()
-      .then((res) => {
-        setCurrentUser(res.res)
-        console.log(res.res)
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   }
-}, [isAuth]);
+
+  function findFilms(keyValue) {
+    handleSavedMovies()
+    if(!localStorage.getItem('movies')) {
+      getFilms(keyValue);
+    } else {
+      setMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('movies'))))
+    }
+  }
+
+  function updateToSaveMovies(id) {
+    const films = JSON.parse(localStorage.getItem('savedMovies'));
+    localStorage.setItem('savedMovies', JSON.stringify(films.filter((film)=>{return film.movieId !== id })))
+  }
+
+  function findSavedMovies(keyValue) {
+    setSavedMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('savedMovies'))))
+  }
+
+  function findByDuration(setFilms, films){
+    setFilms(search.searchMoviesByDuration(films))
+  
+  }
+  
+  React.useEffect(() => {
+    handleTokenCheck();
+  }, []);
+
+  React.useEffect(() => {
+    if (isAuth) {
+      mainApi.getUserInfo()
+        .then((res) => {
+          setCurrentUser(res.res)
+          console.log(res.res)
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [isAuth]);
 
   return (
     <div className="app">
@@ -169,7 +208,13 @@ React.useEffect(() => {
             <ProtectedRoute
               path="/saved-movies"
               component={SavedMovies}
-              isAuth={isAuth} />
+              isAuth={isAuth}
+              savedMovies={savedMovies}
+              onHandleMovies={handleSavedMovies}
+              onHandleMovieButton={handleDeleteSavedMovie}
+              onGetFilms={findSavedMovies}
+              onFindByDuration={findByDuration}
+              onSetMovies={setSavedMovies} />
             <ProtectedRoute
               path="/movies"
               component={Movies}
@@ -177,10 +222,10 @@ React.useEffect(() => {
               isAuth={isAuth}
               onGetFilms={findFilms}
               movies={movies}
-              onIsDuration={setIsDurationMovies}
-              isDuration={isDurationMovies}
+              onSetMovies={setMovies}
               onHandleMovieButton={handlesavedMovie}
-              savedMovies={savedMovies} />
+              savedMovies={savedMovies}
+              onFindByDuration={findByDuration} />
             <ProtectedRoute
               path="/profile"
               component={Profile}
@@ -204,6 +249,14 @@ React.useEffect(() => {
           </Switch>
           {isHidden && isHiddenFooter && <Footer />}
         </CurrentUserContext.Provider>
+        <InfoToolTip
+          title="Редактирование профиля прошло успешно"
+          isOpen={isOpenSuccess}
+          onClose={modalClose}/>
+          <InfoToolTip
+          title="Произошла ошибка"
+          isOpen={isOpenFail}
+          onClose={modalClose}/>
     </div>
   )
 }
