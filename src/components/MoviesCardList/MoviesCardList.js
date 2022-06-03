@@ -12,6 +12,9 @@ export const MoviesCardList = (props) => {
   const [count, setCount] = React.useState(0);
   const buttonClassName = `card-list__button ${count >= props.movies.length && "card-list__button_hidden"}`
 
+  const isNotFound = props.isNotFoundMovies && props.movies.length === 0;
+  const isServerMoviesError = props.isServerMoviesError && props.movies.length === 0;
+
   function handleMoviesCount(width) {
     if (props.component === 'savedMovies') {
       return { count: props.movies.length }
@@ -27,7 +30,7 @@ export const MoviesCardList = (props) => {
 
   function handleSetCount({count}) {
     setCount(count)
-    props.onLoadedFilms(count)
+    if (props.component !== 'savedMovies') props.onLoadedFilms(count)
   }
 
   function getWidth () {
@@ -61,10 +64,14 @@ export const MoviesCardList = (props) => {
 	return (
 		<section className="card-list">
       {props.isLoading && <Preloader />}
+      {isNotFound && <p className="card-list__error-message">Ничего не найдено.</p>}
+      {isServerMoviesError && <p className="card-list__error-message">Во время запроса произошла 
+      ошибка. Возможно,проблема с соединением или сервер недоступен. 
+      Подождите немного и попробуйте ещё раз.</p>}
 			<div className="card-list__wrapper">
 			  {props.movies.slice(0, count).map((movie) => (
 					<MoviesCard
-						key={movie.id}
+						key={movie.id || movie.movieId}
 						movie={movie}
             onHandleMovieButton={props.onHandleMovieButton}
 						savedMovies={props.savedMovies}

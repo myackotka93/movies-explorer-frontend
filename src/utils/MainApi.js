@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://localhost:3001';
+export const BASE_URL = 'https://api.diplom.myackotka.nomoredomains.work';
 
 export const register = (name, email, password) => {
   return fetch(`${BASE_URL}/signup`, {
@@ -12,7 +12,6 @@ export const register = (name, email, password) => {
       if (!res.ok) {
         return Promise.reject(res.status)
       } else {
-        console.log(res)
         return res.json();
       }
     })
@@ -78,7 +77,6 @@ export const getUserInfo = () => {
       if (!res.ok) {
         return Promise.reject(res.status)
       } else {
-        console.log(res)
         return res.json();
       }
     })
@@ -100,14 +98,12 @@ export const setUserInfo = (newName, newEmail) => {
     if (!res.ok) {
       return Promise.reject(res.status)
     } else {
-      console.log(res)
       return res.json();
     }
   })
 };
 
 export const addMovie = (movie) => {
-  console.log(movie)
 
   return fetch(`${BASE_URL}/movies`, {
     method: 'POST',
@@ -134,7 +130,6 @@ export const addMovie = (movie) => {
       if (!res.ok) {
         return Promise.reject(res.status)
       } else {
-        console.log(res)
         return res.json();
       }
     })
@@ -153,7 +148,6 @@ export const movieDelete = (movie) => {
       if (!res.ok) {
         return Promise.reject(res.status)
       } else {
-        console.log(res)
         return res.json();
       }
     })
@@ -182,7 +176,6 @@ export const getFilms = () => {
       if (!res.ok) {
         return Promise.reject(res.status)
       } else {
-        console.log(res)
         return res.json();
       }
     })

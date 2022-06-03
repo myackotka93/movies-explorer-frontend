@@ -13,8 +13,9 @@ import React from "react";
 import * as mainApi from "../../utils/MainApi.js";
 import * as moviesApi from "../../utils/MoviesApi.js";
 import * as search from "../../utils/search.js";
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Switch, withRouter, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from "../ProtectedRoute/ProtectedRoute";
+import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 
 function App(props) {
 
@@ -28,8 +29,13 @@ function App(props) {
   const [isOpenFail, setIsOpenFail] = React.useState(false);
   const [isPreloader, setIsPreloader] = React.useState(false);
   const [loadedFilms, setLoadedFilms] = React.useState(0);
+  const [isNotFoundMovies, setIsNotFoundMovies] = React.useState(true);
+  const [isServerMoviesError, setIsServerMoviesError] = React.useState(false);
+  const [isComponentSavedMovies, setIsComponentSavedMovies] = React.useState(false);
+  const [isFormDisabled, setIsFormDisabled] = React.useState(false)
+  const location = useLocation();
 
-  function modalClose(){
+  function modalClose() {
     setIsOpenSuccess(false)
     setIsOpenFail(false)
   }
@@ -39,26 +45,32 @@ function App(props) {
   }
 
   function handleRegister(name, email, password) {
-  auth.register(name, email, password)
-    .then((res) => {
-      props.history.push('/signin');
-    })
-    .catch((err) => {
-      setIsOpenFail(true);
-      console.log(err);
-    }
-    );
+    setIsFormDisabled(true)
+    mainApi.register(name, email, password)
+      .then((res) => {
+        props.history.push('/signin');
+        setIsFormDisabled(false)
+      })
+      .catch((err) => {
+        setIsOpenFail(true);
+        setIsFormDisabled(false)
+        console.log(err);
+      }
+      );
   }
 
   function handleLogin(email, password) {
-  auth.authorize(email, password)
+    setIsFormDisabled(true)
+    mainApi.authorize(email, password)
     .then((res) => {
       setIsAuth(true)
       props.history.push('/movies');
       localStorage.setItem('auth', true);
+      setIsFormDisabled(false)
     })
     .catch((err) => {
       setIsOpenFail(true);
+      setIsFormDisabled(false)
       console.log(err);
     }
     );
@@ -70,7 +82,7 @@ function App(props) {
       .then((res) => {
         if (res) {
           setIsAuth(true);
-          props.history.push("/movies");
+          props.history.push(location.pathname.toString());
         }
       })
       .catch((err) => {
@@ -80,69 +92,94 @@ function App(props) {
   }
 
   function handleSignOut() {
-  mainApi.signOut()
-    .then((res) => {
-      props.history.push('/signin');
-      setIsAuth(false);
-      localStorage.removeItem('auth', 'movies', 'savedMovies');
-      localStorage.removeItem('movies');
-      localStorage.removeItem('savedMovies');
-    })
-    .catch((err) => {
-      console.log(err)
-    }
-    );
+    mainApi.signOut()
+      .then((res) => {
+        props.history.push('/signin');
+        setIsAuth(false);
+        setMovies([])
+        setSavedMovies([])
+        localStorage.removeItem('auth');
+        localStorage.removeItem('movies');
+        localStorage.removeItem('savedMovies');
+        localStorage.removeItem('keyValueSavedMovies');
+        localStorage.removeItem('keyValueMovies');
+      })
+      .catch((err) => {
+        console.log(err)
+      }
+      );
   }
 
   function handleUpdateUser(data) {
-  mainApi.setUserInfo(data.name, data.email)
-    .then((res) => {
-      setCurrentUser(res.data);
-      setIsOpenSuccess(true);
-    })
-    .catch((err) => {
-      setIsOpenFail(true)
-      console.log(err);
-    });
-  }
-
-  function getFilms() {
-    setIsPreloader(true)
-    moviesApi.getFilms()
+    setIsFormDisabled(true)
+    mainApi.setUserInfo(data.name, data.email)
       .then((res) => {
-        localStorage.setItem('movies', JSON.stringify(res));
-        setMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('movies'))));
-        setIsPreloader(false);
+        setCurrentUser(res);
+        setIsOpenSuccess(true);
+        setIsFormDisabled(false)
       })
       .catch((err) => {
+        setIsOpenFail(true)
+        setIsFormDisabled(false)
         console.log(err);
       });
   }
 
-  function handleSavedMovies() {
+  function getFilms(keyValue) {
     setIsPreloader(true)
+    setIsNotFoundMovies(false)
+    setIsFormDisabled(true)
+    moviesApi.getFilms()
+      .then((res) => {
+        localStorage.setItem('movies', JSON.stringify(res));
+        setMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('movies'))));
+        handleNotFoundMovies(movies)
+        setIsPreloader(false);
+        setIsServerMoviesError(false)
+        setIsFormDisabled(false)
+      })
+      .catch((err) => {
+        console.log(err);
+        setIsServerMoviesError(true)
+        setIsNotFoundMovies(false)
+        setIsFormDisabled(false)
+      });
+  }
+
+  function handleNotFoundMovies(films) {
+    if (films.length === 0) {
+      setIsNotFoundMovies(true)
+    }
+  }
+
+  function handleSavedMovies() {
+    setIsNotFoundMovies(false)
+    if (isComponentSavedMovies) setIsPreloader(true)
     mainApi.getFilms()
       .then((res) => {
         localStorage.setItem('savedMovies', JSON.stringify(res))
         console.log(res)
         setSavedMovies(res)
+        handleNotFoundMovies(savedMovies)
+        setIsPreloader(false)
+        setIsServerMoviesError(false)
       })
       .catch((err) => {
         console.log(err);
-        setSavedMovies(res)
-        setIsPreloader(false)
+        setIsServerMoviesError(true)
+        setIsNotFoundMovies(false)
       });
   }
 
   function handleDeleteSavedMovie(movie) {
-  mainApi.movieDelete(movie.movieId)
-    .then(() => {
-      setSavedMovies((movies) => movies.filter((film) => film.movieId !== movie.movieId));
-      updateToSaveMovies(movie.movieId);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+    mainApi.movieDelete(movie.movieId)
+      .then(() => {
+        setSavedMovies((movies) => movies.filter((film) => film.movieId !== movie.movieId));
+        updateToSaveMovies(movie.movieId);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   function handlesavedMovie(movie) {
@@ -166,11 +203,20 @@ function App(props) {
 
   function findFilms(keyValue) {
     setLoadedFilms(0);
-    handleSavedMovies()
+    setIsNotFoundMovies(true)
+    localStorage.setItem('keyValueMovies', keyValue)
+    mainApi.getFilms()
+      .then((res) => {
+        setSavedMovies(res)
+      })
+      .catch((err) => {
+        console.log(err)
+      });
     if (!localStorage.getItem('movies')) {
       getFilms(keyValue);
     } else {
       setMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('movies'))))
+      handleNotFoundMovies(movies)
     }
   }
 
@@ -181,10 +227,13 @@ function App(props) {
 
   function findSavedMovies(keyValue) {
     setSavedMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('savedMovies'))))
+    handleNotFoundMovies(savedMovies)
+    localStorage.setItem('keyValueSavedMovies', keyValue)
   }
 
   function findByDuration(setFilms, films){
     setFilms(search.searchMoviesByDuration(films))
+    handleNotFoundMovies(savedMovies)
   
   }
   
@@ -202,6 +251,12 @@ function App(props) {
         .catch((err) => {
           console.log(err);
         });
+        if (localStorage.getItem('keyValueMovies')) {
+          findFilms(localStorage.getItem('keyValueMovies'))
+        }
+        if (localStorage.getItem('keyValueSavedMovies')) {
+          findSavedMovies(localStorage.getItem('keyValueSavedMovies'))
+        }
     }
   }, [isAuth]);
 
@@ -223,7 +278,12 @@ function App(props) {
               onGetFilms={findSavedMovies}
               onFindByDuration={findByDuration}
               onSetMovies={setSavedMovies}
-              isLoading={isPreloader} />
+              isLoading={isPreloader}
+              isNotFoundMovies={isNotFoundMovies}
+              isServerMoviesError={isServerMoviesError}
+              onComponentSavedMovies={setIsComponentSavedMovies}
+              onLoadedFilms={setLoadedFilms}
+              onIsNotFoundMovies={setIsNotFoundMovies} />
             <ProtectedRoute
               path="/movies"
               component={Movies}
@@ -234,25 +294,32 @@ function App(props) {
               onHandleMovieButton={handlesavedMovie}
               savedMovies={savedMovies}
               onFindByDuration={findByDuration}
-              isLoading={isPreloader} 
+              isLoading={isPreloader}
               onLoadedFilms={setLoadedFilms}
-              loadedFilms={loadedFilms} />
+              loadedFilms={loadedFilms}
+              isNotFoundMovies={isNotFoundMovies}
+              onIsNotFoundMovies={setIsNotFoundMovies}
+              isServerMoviesError={isServerMoviesError}
+              isFormDisabled={isFormDisabled} />
             <ProtectedRoute
               path="/profile"
               component={Profile}
               onIsHiddenFooter={setIsHiddenFooter}
               isAuth={isAuth} 
               onSignOut={handleSignOut} 
-              onUpdateUser={handleUpdateUser} />
+              onUpdateUser={handleUpdateUser}
+              isFormDisabled={isFormDisabled} />
             <Route path="/signup">
               <Register 
                 onIsHidden={setIsHidden} 
-                onRegister={handleRegister} />
+                onRegister={handleRegister}
+                isFormDisabled={isFormDisabled} />
             </Route>
             <Route path="/signin">
               <Login 
                 onIsHidden={setIsHidden} 
-                onLogin={handleLogin} />
+                onLogin={handleLogin}
+                isFormDisabled={isFormDisabled} />
             </Route>
             <Route path="*">
               <NotFound onIsHidden={setIsHidden} />

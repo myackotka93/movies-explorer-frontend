@@ -3,13 +3,21 @@ import { MoviesCardList } from '../MoviesCardList/MoviesCardList';
 import { SearchForm } from '../SearchForm/SearchForm';
 
 export const Movies = (props) => {
+
+  React.useEffect(()=> {
+    props.onLoadedFilms(0)
+    props.onIsNotFoundMovies(false)
+  },[])
+
 	return (
 		<>
       <SearchForm
         onGetFilms={props.onGetFilms} 
 				onFindByDuration={props.onFindByDuration}
 				movies={props.movies}
-				onSetMovies={props.onSetMovies} />
+				onSetMovies={props.onSetMovies}
+        isFormDisabled={props.isFormDisabled}
+        keyValue="keyValueMovies" />
       <MoviesCardList
         movies={props.movies}
         onHandleMovieButton={props.onHandleMovieButton}
@@ -18,7 +26,9 @@ export const Movies = (props) => {
         onSetMovies={props.onSetMovies}
         isLoading={props.isLoading}
 				onLoadedFilms={props.onLoadedFilms}
-				loadedFilms={props.loadedFilms} />
+				loadedFilms={props.loadedFilms}
+        isNotFoundMovies={props.isNotFoundMovies}
+        isServerMoviesError={props.isServerMoviesError} />
 		</>
 	);
 }
