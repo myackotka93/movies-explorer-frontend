@@ -1,4 +1,4 @@
-export const BASE_URL = 'https://api.diplom.myackotka.nomoredomains.work';
+export const BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://api.diplom.myackotka.nomoredomains.work';
 
 export const register = (name, email, password) => {
   return fetch(`${BASE_URL}/signup`, {
@@ -30,6 +30,8 @@ export const authorize = (email, password) => {
       if (!res.ok) {
         return Promise.reject(res.status)
       }
+
+      return res.json();
     })
 };
 
@@ -38,6 +40,7 @@ export const checkToken = () => {
     method: 'GET',
     credentials: 'include',
     headers: {
+      'authorization': 'Bearer ' + localStorage.getItem('token'),
       "Content-Type": "application/json"
     }
   })
@@ -55,6 +58,7 @@ export const signOut = () => {
     method: 'POST',
     credentials: 'include',
     headers: {
+      'authorization': 'Bearer ' + localStorage.getItem('token'),
       "Content-Type": "application/json"
     }
   })
@@ -70,6 +74,7 @@ export const getUserInfo = () => {
     method: 'GET',
     credentials: 'include',
     headers: {
+      'authorization': 'Bearer ' + localStorage.getItem('token'),
       'Content-Type': 'application/json',
     }
   })
@@ -87,6 +92,7 @@ export const setUserInfo = (newName, newEmail) => {
     method: 'PATCH',
     credentials: 'include',
     headers:{
+      'authorization': 'Bearer ' + localStorage.getItem('token'),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -109,6 +115,7 @@ export const addMovie = (movie) => {
     method: 'POST',
     credentials: 'include',
     headers: {
+      'authorization': 'Bearer ' + localStorage.getItem('token'),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -140,6 +147,7 @@ export const movieDelete = (movie) => {
     method: 'DELETE',
     credentials: 'include',
     headers: {
+      'authorization': 'Bearer ' + localStorage.getItem('token'),
       'Content-Type': 'application/json',
     }
 
@@ -169,6 +177,7 @@ export const getFilms = () => {
     method: 'GET',
     credentials: 'include',
     headers: {
+      'authorization': 'Bearer ' + localStorage.getItem('token'),
       'Content-Type': 'application/json',
     }
   })

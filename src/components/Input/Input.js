@@ -32,6 +32,7 @@ export const Input = (props) => {
         minLength={props.minLength} 
         maxLength={props.maxLength}
         disabled={props.isFormDisabled} 
+		placeholder={props.placeholder}
         required />
 			<span className="input__error">{errorMessage}</span>
 		</div>

@@ -78,7 +78,8 @@ export const MoviesCardList = (props) => {
             component={props.component} />
 				  ))}
 				</div>
-      <button className={buttonClassName} onClick={handleButton}>Еще</button>
+        {props.movies.slice(count).length >= 1 && <button className={buttonClassName} onClick={handleButton}>Еще</button>}
+      
 		</section>
 	);
 }
