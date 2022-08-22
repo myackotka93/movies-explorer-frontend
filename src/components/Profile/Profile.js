@@ -4,7 +4,6 @@ import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 import './Profile.css';
 
 export const Profile = (props) => {
-
 	const formRef = React.useRef();
 	const currentUser = React.useContext(CurrentUserContext);
 

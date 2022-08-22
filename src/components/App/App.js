@@ -9,22 +9,21 @@ import { NotFound } from "../NotFound/NotFound";
 import InfoToolTip from '../InfoToolTip/InfoToolTip';
 import { Header } from "../Header/Header";
 import { Footer } from "../Footer/Footer";
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as mainApi from "../../utils/MainApi.js";
 import * as moviesApi from "../../utils/MoviesApi.js";
 import * as search from "../../utils/search.js";
-import { Route, Switch, withRouter, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { ProtectedRoute } from "../ProtectedRoute/ProtectedRoute";
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 
 function App(props) {
-
-  const [isAuth, setIsAuth] = React.useState(false);
-  const [isHidden, setIsHidden] = React.useState(true);
-  const [isHiddenFooter, setIsHiddenFooter] = React.useState(true);
+  const [isAuth, setIsAuth] = useState(!!localStorage.getItem('token'));
+  const [isHidden, setIsHidden] = useState(true);
+  const [isHiddenFooter, setIsHiddenFooter] = useState(true);
   const [movies, setMovies] = React.useState([]);
-  const [currentUser, setCurrentUser] = React.useState({ name: "", email: "", id: "" });
-  const [savedMovies, setSavedMovies] = React.useState([]);
+  const [currentUser, setCurrentUser] = useState({ name: "", email: "", id: "" });
+  const [savedMovies, setSavedMovies] = useState([]);
   const [isOpenSuccess, setIsOpenSuccess] = React.useState(false);
   const [isOpenFail, setIsOpenFail] = React.useState(false);
   const [isPreloader, setIsPreloader] = React.useState(false);
@@ -33,7 +32,7 @@ function App(props) {
   const [isServerMoviesError, setIsServerMoviesError] = React.useState(false);
   const [isComponentSavedMovies, setIsComponentSavedMovies] = React.useState(false);
   const [isFormDisabled, setIsFormDisabled] = React.useState(false)
-  const location = useLocation();
+  const navigate = useNavigate();
 
   function modalClose() {
     setIsOpenSuccess(false)
@@ -48,8 +47,24 @@ function App(props) {
     setIsFormDisabled(true)
     mainApi.register(name, email, password)
       .then((res) => {
-        props.history.push('/signin');
+        navigate('/signin');
         setIsFormDisabled(false)
+      })
+      .catch((err) => {
+        setIsOpenFail(true);
+        setIsFormDisabled(false)
+        console.log(err);
+      });
+  }
+
+  function handleLogin(email, password) {
+    setIsFormDisabled(true)
+    mainApi.authorize(email, password)
+      .then((res) => {
+        setIsAuth(true)
+        navigate('/movies');
+        localStorage.setItem('token', res.token);
+        setIsFormDisabled(false);
       })
       .catch((err) => {
         setIsOpenFail(true);
@@ -59,55 +74,31 @@ function App(props) {
       );
   }
 
-  function handleLogin(email, password) {
-    setIsFormDisabled(true)
-    mainApi.authorize(email, password)
-    .then((res) => {
-      setIsAuth(true)
-      props.history.push('/movies');
-      localStorage.setItem('auth', true);
-      setIsFormDisabled(false)
-    })
-    .catch((err) => {
-      setIsOpenFail(true);
-      setIsFormDisabled(false)
-      console.log(err);
-    }
-    );
-  }
-
   function handleTokenCheck() {
-  if (localStorage.getItem('auth')) {
-    mainApi.checkToken()
-      .then((res) => {
-        if (res) {
-          setIsAuth(true);
-          props.history.push(location.pathname.toString());
-        }
-      })
-      .catch((err) => {
-        console.log(err)
-      });
+    if (localStorage.getItem('token')) {
+      mainApi.checkToken()
+        .then((res) => {
+          setCurrentUser(res)
+        })
+        .catch((err) => {
+          console.error(err);
+          localStorage.removeItem('token');
+          setIsAuth(false);
+        });
     }
   }
 
   function handleSignOut() {
-    mainApi.signOut()
-      .then((res) => {
-        props.history.push('/signin');
-        setIsAuth(false);
-        setMovies([])
-        setSavedMovies([])
-        localStorage.removeItem('auth');
-        localStorage.removeItem('movies');
-        localStorage.removeItem('savedMovies');
-        localStorage.removeItem('keyValueSavedMovies');
-        localStorage.removeItem('keyValueMovies');
-      })
-      .catch((err) => {
-        console.log(err)
-      }
-      );
+    localStorage.removeItem('token');
+    localStorage.removeItem('movies');
+    localStorage.removeItem('savedMovies');
+    localStorage.removeItem('keyValueSavedMovies');
+    localStorage.removeItem('keyValueMovies');
+    setIsAuth(false);
+    setMovies([])
+    setSavedMovies([])
+    
+    navigate('/signin');
   }
 
   function handleUpdateUser(data) {
@@ -129,10 +120,10 @@ function App(props) {
     setIsPreloader(true)
     setIsNotFoundMovies(false)
     setIsFormDisabled(true)
+
     moviesApi.getFilms()
       .then((res) => {
-        localStorage.setItem('movies', JSON.stringify(res));
-        setMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('movies'))));
+        setMovies(res);
         handleNotFoundMovies(movies)
         setIsPreloader(false);
         setIsServerMoviesError(false)
@@ -201,28 +192,9 @@ function App(props) {
       });
   }
 
-  function findFilms(keyValue) {
-    setLoadedFilms(0);
-    setIsNotFoundMovies(true)
-    localStorage.setItem('keyValueMovies', keyValue)
-    mainApi.getFilms()
-      .then((res) => {
-        setSavedMovies(res)
-      })
-      .catch((err) => {
-        console.log(err)
-      });
-    if (!localStorage.getItem('movies')) {
-      getFilms(keyValue);
-    } else {
-      setMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('movies'))))
-      handleNotFoundMovies(movies)
-    }
-  }
-
   function updateToSaveMovies(id) {
     const films = JSON.parse(localStorage.getItem('savedMovies'));
-    localStorage.setItem('savedMovies', JSON.stringify(films.filter((film)=> { return film.movieId !== id })))
+    localStorage.setItem('savedMovies', JSON.stringify(films.filter((film) => { return film.movieId !== id })))
   }
 
   function findSavedMovies(keyValue) {
@@ -231,32 +203,25 @@ function App(props) {
     localStorage.setItem('keyValueSavedMovies', keyValue)
   }
 
-  function findByDuration(setFilms, films){
+  function findByDuration(setFilms, films) {
     setFilms(search.searchMoviesByDuration(films))
     handleNotFoundMovies(savedMovies)
-  
+
   }
-  
+
   React.useEffect(() => {
     handleTokenCheck();
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isAuth) {
-      mainApi.getUserInfo()
-        .then((res) => {
-          setCurrentUser(res.res)
-          console.log(res.res)
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-        if (localStorage.getItem('keyValueMovies')) {
-          findFilms(localStorage.getItem('keyValueMovies'))
-        }
-        if (localStorage.getItem('keyValueSavedMovies')) {
-          findSavedMovies(localStorage.getItem('keyValueSavedMovies'))
-        }
+      getFilms()
+    }
+  }, [isAuth]);
+
+  useEffect(() => {
+    if (isAuth && localStorage.getItem('keyValueSavedMovies')) {
+      findSavedMovies(localStorage.getItem('keyValueSavedMovies'))
     }
   }, [isAuth]);
 
@@ -264,79 +229,84 @@ function App(props) {
     <div className="app">
       <CurrentUserContext.Provider value={currentUser}>
         {isHidden && <Header isAuth={isAuth} />}
-          <Switch>
-            <Route exact path="/">
-              <Main setAuth={handleLink} />
-            </Route>
-            <ProtectedRoute
-              path="/saved-movies"
-              component={SavedMovies}
-              isAuth={isAuth}
-              savedMovies={savedMovies}
-              onHandleMovies={handleSavedMovies}
-              onHandleMovieButton={handleDeleteSavedMovie}
-              onGetFilms={findSavedMovies}
-              onFindByDuration={findByDuration}
-              onSetMovies={setSavedMovies}
-              isLoading={isPreloader}
-              isNotFoundMovies={isNotFoundMovies}
-              isServerMoviesError={isServerMoviesError}
-              onComponentSavedMovies={setIsComponentSavedMovies}
-              onLoadedFilms={setLoadedFilms}
-              onIsNotFoundMovies={setIsNotFoundMovies} />
-            <ProtectedRoute
-              path="/movies"
-              component={Movies}
-              isAuth={isAuth}
-              onGetFilms={findFilms}
-              movies={movies}
-              onSetMovies={setMovies}
-              onHandleMovieButton={handlesavedMovie}
-              savedMovies={savedMovies}
-              onFindByDuration={findByDuration}
-              isLoading={isPreloader}
-              onLoadedFilms={setLoadedFilms}
-              loadedFilms={loadedFilms}
-              isNotFoundMovies={isNotFoundMovies}
-              onIsNotFoundMovies={setIsNotFoundMovies}
-              isServerMoviesError={isServerMoviesError}
-              isFormDisabled={isFormDisabled} />
-            <ProtectedRoute
-              path="/profile"
-              component={Profile}
-              onIsHiddenFooter={setIsHiddenFooter}
-              isAuth={isAuth} 
-              onSignOut={handleSignOut} 
-              onUpdateUser={handleUpdateUser}
-              isFormDisabled={isFormDisabled} />
-            <Route path="/signup">
-              <Register 
-                onIsHidden={setIsHidden} 
-                onRegister={handleRegister}
-                isFormDisabled={isFormDisabled} />
-            </Route>
-            <Route path="/signin">
-              <Login 
-                onIsHidden={setIsHidden} 
-                onLogin={handleLogin}
-                isFormDisabled={isFormDisabled} />
-            </Route>
-            <Route path="*">
-              <NotFound onIsHidden={setIsHidden} />
-            </Route>
-          </Switch>
-          {isHidden && isHiddenFooter && <Footer />}
-        </CurrentUserContext.Provider>
-        <InfoToolTip
-          title="Редактирование профиля прошло успешно"
-          isOpen={isOpenSuccess}
-          onClose={modalClose}/>
-          <InfoToolTip
-          title="Произошла ошибка"
-          isOpen={isOpenFail}
-          onClose={modalClose}/>
+        <Routes>
+          <Route path="/" element={<Main setAuth={handleLink} />} />
+          <Route path="/saved-movies" element={<ProtectedRoute isAuth={isAuth} />}>
+            <Route path="" element={
+              <SavedMovies
+                savedMovies={savedMovies}
+                onHandleMovies={handleSavedMovies}
+                onHandleMovieButton={handleDeleteSavedMovie}
+                onGetFilms={findSavedMovies}
+                onFindByDuration={findByDuration}
+                onSetMovies={setSavedMovies}
+                isLoading={isPreloader}
+                isNotFoundMovies={isNotFoundMovies}
+                isServerMoviesError={isServerMoviesError}
+                onComponentSavedMovies={setIsComponentSavedMovies}
+                onLoadedFilms={setLoadedFilms}
+                onIsNotFoundMovies={setIsNotFoundMovies}
+              />
+            } />
+          </Route>
+          <Route path="/movies" element={<ProtectedRoute isAuth={isAuth} />}>
+            <Route path="" element={
+              <Movies
+                // onGetFilms={findFilms}
+                movies={movies}
+                onSetMovies={setMovies}
+                onHandleMovieButton={handlesavedMovie}
+                savedMovies={savedMovies}
+                onFindByDuration={findByDuration}
+                isLoading={isPreloader}
+                onLoadedFilms={setLoadedFilms}
+                loadedFilms={loadedFilms}
+                isNotFoundMovies={isNotFoundMovies}
+                onIsNotFoundMovies={setIsNotFoundMovies}
+                isServerMoviesError={isServerMoviesError}
+                isFormDisabled={isFormDisabled}
+              />
+            } />
+          </Route>
+          <Route path="/profile" element={<ProtectedRoute isAuth={isAuth} />}>
+            <Route path="" element={
+              <Profile
+                onIsHiddenFooter={setIsHiddenFooter}
+                onSignOut={handleSignOut}
+                onUpdateUser={handleUpdateUser}
+                isFormDisabled={isFormDisabled}
+              />
+            } />
+
+          </Route>
+          <Route path="/signup" element={<Register
+            onIsHidden={setIsHidden}
+            onRegister={handleRegister}
+            isFormDisabled={isFormDisabled} />}>
+
+          </Route>
+          <Route path="/signin" element={<Login
+            onIsHidden={setIsHidden}
+            onLogin={handleLogin}
+            isFormDisabled={isFormDisabled}
+          />}>
+
+          </Route>
+          <Route path="*" element={<NotFound onIsHidden={setIsHidden} />}>
+          </Route>
+        </Routes>
+        {isHidden && isHiddenFooter && <Footer />}
+      </CurrentUserContext.Provider>
+      <InfoToolTip
+        title="Редактирование профиля прошло успешно"
+        isOpen={isOpenSuccess}
+        onClose={modalClose} />
+      <InfoToolTip
+        title="Произошла ошибка"
+        isOpen={isOpenFail}
+        onClose={modalClose} />
     </div>
   )
 }
 
-export default withRouter(App);
+export default App;
