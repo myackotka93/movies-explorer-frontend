@@ -64,14 +64,14 @@ export const MoviesCardList = (props) => {
 	return (
 		<section className="card-list">
       {props.isLoading && <Preloader />}
-      {isNotFound && <p className="card-list__error-message">Ничего не найдено.</p>}
+      {!props.isLoading && !props.movies.length && <p className="card-list__error-message">Ничего не найдено.</p>}
       {isServerMoviesError && <p className="card-list__error-message">Во время запроса произошла 
       ошибка. Возможно,проблема с соединением или сервер недоступен. 
       Подождите немного и попробуйте ещё раз.</p>}
 			<div className="card-list__wrapper">
 			  {props.movies.slice(0, count).map((movie) => (
 					<MoviesCard
-						key={movie.id || movie.movieId}
+						key={movie._id ?? movie.id ?? movie.movieId}
 						movie={movie}
             onHandleMovieButton={props.onHandleMovieButton}
 						savedMovies={props.savedMovies}

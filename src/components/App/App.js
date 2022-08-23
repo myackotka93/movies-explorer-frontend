@@ -28,7 +28,7 @@ function App(props) {
   const [isOpenFail, setIsOpenFail] = React.useState(false);
   const [isPreloader, setIsPreloader] = React.useState(false);
   const [loadedFilms, setLoadedFilms] = React.useState(0);
-  const [isNotFoundMovies, setIsNotFoundMovies] = React.useState(true);
+  const [isNotFoundMovies, setIsNotFoundMovies] = React.useState(false);
   const [isServerMoviesError, setIsServerMoviesError] = React.useState(false);
   const [isComponentSavedMovies, setIsComponentSavedMovies] = React.useState(false);
   const [isFormDisabled, setIsFormDisabled] = React.useState(false)
@@ -46,10 +46,7 @@ function App(props) {
   function handleRegister(name, email, password) {
     setIsFormDisabled(true)
     mainApi.register(name, email, password)
-      .then((res) => {
-        navigate('/signin');
-        setIsFormDisabled(false)
-      })
+      .then(handleAuth)
       .catch((err) => {
         setIsOpenFail(true);
         setIsFormDisabled(false)
@@ -57,21 +54,23 @@ function App(props) {
       });
   }
 
+  function handleAuth({data, token}) {
+    setCurrentUser(data);
+    setIsAuth(true)
+    navigate('/movies');
+    localStorage.setItem('token', token);
+    setIsFormDisabled(false);
+  }
+
   function handleLogin(email, password) {
     setIsFormDisabled(true)
     mainApi.authorize(email, password)
-      .then((res) => {
-        setIsAuth(true)
-        navigate('/movies');
-        localStorage.setItem('token', res.token);
-        setIsFormDisabled(false);
-      })
+      .then(handleAuth)
       .catch((err) => {
         setIsOpenFail(true);
         setIsFormDisabled(false)
         console.log(err);
-      }
-      );
+      });
   }
 
   function handleTokenCheck() {
@@ -116,42 +115,51 @@ function App(props) {
       });
   }
 
-  function getFilms(keyValue) {
-    setIsPreloader(true)
-    setIsNotFoundMovies(false)
-    setIsFormDisabled(true)
+  function getFilms() {
+    const movies =  JSON.parse(localStorage.getItem('movies') ?? '[]');
 
-    moviesApi.getFilms()
-      .then((res) => {
-        setMovies(res);
-        handleNotFoundMovies(movies)
-        setIsPreloader(false);
-        setIsServerMoviesError(false)
-        setIsFormDisabled(false)
-      })
-      .catch((err) => {
-        console.log(err);
-        setIsServerMoviesError(true)
-        setIsNotFoundMovies(false)
-        setIsFormDisabled(false)
-      });
-  }
+    if (movies.length) {
+      initMovies(movies);
+    } else {
+      setIsPreloader(true);
+      setIsFormDisabled(true);
+      setIsNotFoundMovies(false);
 
-  function handleNotFoundMovies(films) {
-    if (films.length === 0) {
-      setIsNotFoundMovies(true)
+      moviesApi.getFilms()
+        .then(initMovies)
+        .catch((err) => {
+          console.log(err);
+          setIsServerMoviesError(true)
+          setIsFormDisabled(false)
+        });
     }
   }
 
+  function initMovies(movies) {
+    setMovies(movies);
+    setIsPreloader(false);
+    setIsServerMoviesError(false)
+    setIsFormDisabled(false)
+    localStorage.setItem('movies', JSON.stringify(movies));
+
+    if (movies.length === 0) {
+      setIsNotFoundMovies(true);
+    }
+  }
+
+  function getSavedFilms() {    
+    mainApi.getSavedFilms()
+    .then((res) => {
+      setSavedMovies(res)
+    })
+  }
+
   function handleSavedMovies() {
-    setIsNotFoundMovies(false)
-    if (isComponentSavedMovies) setIsPreloader(true)
-    mainApi.getFilms()
+    mainApi.getSavedFilms()
       .then((res) => {
         localStorage.setItem('savedMovies', JSON.stringify(res))
         console.log(res)
         setSavedMovies(res)
-        handleNotFoundMovies(savedMovies)
         setIsPreloader(false)
         setIsServerMoviesError(false)
       })
@@ -163,9 +171,9 @@ function App(props) {
   }
 
   function handleDeleteSavedMovie(movie) {
-    mainApi.movieDelete(movie.movieId)
+    mainApi.movieDelete(movie._id)
       .then(() => {
-        setSavedMovies((movies) => movies.filter((film) => film.movieId !== movie.movieId));
+        setSavedMovies((movies) => movies.filter((film) => film._id !== movie._id));
         updateToSaveMovies(movie.movieId);
       })
       .catch((err) => {
@@ -175,17 +183,17 @@ function App(props) {
 
   function handlesavedMovie(movie) {
     const id = movie.id || movie.movieId;
-    console.log(movie)
-    const isLiked = savedMovies.some(item => item.movieId === id && item.owner === currentUser.id);
-    console.log(isLiked)
-    mainApi.changeSaveMovieStatus(movie, isLiked)
+    console.log(currentUser);
+    const savedMovie = savedMovies.find(item => item.movieId === id && item.owner === currentUser._id);
+    const isLiked = !!savedMovie;
+
+    mainApi.changeSaveMovieStatus(savedMovie ?? movie, isLiked)
       .then((newMovie) => {
         handleSavedMovies()
         setMovies((films) =>
           films.map((film) => (
             film.id === movie.movieId ? newMovie : film))
         );
-
       })
       .catch((err) => {
         console.log(err);
@@ -199,14 +207,11 @@ function App(props) {
 
   function findSavedMovies(keyValue) {
     setSavedMovies(search.searchMovies(keyValue, JSON.parse(localStorage.getItem('savedMovies'))))
-    handleNotFoundMovies(savedMovies)
     localStorage.setItem('keyValueSavedMovies', keyValue)
   }
 
   function findByDuration(setFilms, films) {
     setFilms(search.searchMoviesByDuration(films))
-    handleNotFoundMovies(savedMovies)
-
   }
 
   React.useEffect(() => {
@@ -215,13 +220,8 @@ function App(props) {
 
   useEffect(() => {
     if (isAuth) {
-      getFilms()
-    }
-  }, [isAuth]);
-
-  useEffect(() => {
-    if (isAuth && localStorage.getItem('keyValueSavedMovies')) {
-      findSavedMovies(localStorage.getItem('keyValueSavedMovies'))
+      getFilms();
+      getSavedFilms();
     }
   }, [isAuth]);
 
@@ -233,8 +233,8 @@ function App(props) {
           <Route path="/" element={<Main setAuth={handleLink} />} />
           <Route path="/saved-movies" element={<ProtectedRoute isAuth={isAuth} />}>
             <Route path="" element={
-              <SavedMovies
-                savedMovies={savedMovies}
+              <Movies
+                movies={savedMovies}
                 onHandleMovies={handleSavedMovies}
                 onHandleMovieButton={handleDeleteSavedMovie}
                 onGetFilms={findSavedMovies}

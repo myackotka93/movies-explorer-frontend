@@ -11,7 +11,6 @@ export const getFilms = () => {
       if (!res.ok) {
         return Promise.reject(res.status)
       } else {
-        console.log(res)
         return res.json();
       }
     })

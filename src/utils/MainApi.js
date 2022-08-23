@@ -26,13 +26,14 @@ export const authorize = (email, password) => {
     },
     body: JSON.stringify({  email, password })
   })
-    .then(res => {
+    .then(res => Promise.all([res.json(), res]))
+    .then(([body, res]) => {
       if (!res.ok) {
-        return Promise.reject(res.status)
+        return Promise.reject(body.message)
+      } else {
+        return body;
       }
-
-      return res.json();
-    })
+    });
 };
 
 export const checkToken = () => {
@@ -64,7 +65,7 @@ export const signOut = () => {
   })
     .then(res => {
       if (!res.ok) {
-        return Promise.reject(res.status)
+        return Promise.reject(res.message)
       }
     })
 };
@@ -80,7 +81,7 @@ export const getUserInfo = () => {
   })
     .then(res => {
       if (!res.ok) {
-        return Promise.reject(res.status)
+        return Promise.reject(res.message)
       } else {
         return res.json();
       }
@@ -102,7 +103,7 @@ export const setUserInfo = (newName, newEmail) => {
   })
   .then(res => {
     if (!res.ok) {
-      return Promise.reject(res.status)
+      return Promise.reject(res.message)
     } else {
       return res.json();
     }
@@ -135,7 +136,7 @@ export const addMovie = (movie) => {
   })
     .then(res => {
       if (!res.ok) {
-        return Promise.reject(res.status)
+        return Promise.reject(res.message)
       } else {
         return res.json();
       }
@@ -154,7 +155,7 @@ export const movieDelete = (movie) => {
   })
     .then(res => {
       if (!res.ok) {
-        return Promise.reject(res.status)
+        return Promise.reject(res.message)
       } else {
         return res.json();
       }
@@ -162,17 +163,15 @@ export const movieDelete = (movie) => {
 };
 
 export const changeSaveMovieStatus = (movie, isSaved) => {
-  const id = movie.id || movie.movieId;
   if (isSaved) {
-
-    return movieDelete(id)
+    return movieDelete(movie._id)
   } else {
 
     return addMovie(movie)
   }
 };
 
-export const getFilms = () => {
+export const getSavedFilms = () => {
   return fetch(`${BASE_URL}/movies`, {
     method: 'GET',
     credentials: 'include',
@@ -183,7 +182,7 @@ export const getFilms = () => {
   })
     .then(res => {
       if (!res.ok) {
-        return Promise.reject(res.status)
+        return Promise.reject(res.message)
       } else {
         return res.json();
       }

@@ -23,11 +23,8 @@ export const SearchForm = (props) => {
         <div className="search__vert-line"></div>
 				<div className="search__wrapper">
           <FilterCheckbox
-						onFindByDuration={props.onFindByDuration}
-						movies={props.movies}
-						onSetMovies={props.onSetMovies}
-						keyValue={keyValue}
-						onGetFilms={props.onGetFilms} />
+		  	handleCheck={props.handleCheck}
+		/>
           <label className="search__title">Короткометражки</label>
 				</div>
 			</form>

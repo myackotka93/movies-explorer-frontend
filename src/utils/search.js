@@ -8,7 +8,7 @@ export function searchMovies(keyValue, movies) {
   
   export function searchMoviesByDuration(movies) {
     return movies.filter((movie) => {
-      return movie.nameRU.duration <= DURATION
+      return movie.duration <= DURATION
     })
   }
   

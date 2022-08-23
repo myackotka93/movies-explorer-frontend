@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { searchMovies } from '../../utils/search';
+import { searchMovies, searchMoviesByDuration } from '../../utils/search';
 import { MoviesCardList } from '../MoviesCardList/MoviesCardList';
 import { SearchForm } from '../SearchForm/SearchForm';
 
 export const Movies = (props) => {
   const [searchValue, setSearchValue] = useState('');
+  const [check, setCheck] = useState(false);
 
   React.useEffect(()=> {
     props.onLoadedFilms(0)
@@ -15,7 +16,14 @@ export const Movies = (props) => {
     setSearchValue(searchValue)
   }
 
-  const filteredMovies = useMemo(() => searchMovies(searchValue, props.movies), [props.movies, searchValue]);
+  function handleCheck(value) {
+    setCheck(value)
+  }
+
+  const filteredMovies = useMemo(() => {
+    const searchableMovies = searchMovies(searchValue, props.movies);
+    return check ? searchMoviesByDuration(searchableMovies) : searchableMovies;
+  }, [props.movies, searchValue, check]);
 
 	return (
 		<>
@@ -25,8 +33,9 @@ export const Movies = (props) => {
 				movies={props.movies}
 				onSetMovies={props.onSetMovies}
         isFormDisabled={props.isFormDisabled}
-        keyValue="keyValueMovies" 
-        />
+        handleCheck={handleCheck}
+      />
+
       <MoviesCardList
         movies={filteredMovies}
         onHandleMovieButton={props.onHandleMovieButton}

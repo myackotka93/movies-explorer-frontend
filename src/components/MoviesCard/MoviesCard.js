@@ -3,13 +3,12 @@ import './MoviesCard.css';
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 
 export const MoviesCard = (props) => {
-
-	const {nameRU, image, duration} = props.movie;
+  const {nameRU, image, duration} = props.movie;
   const currentUser = React.useContext(CurrentUserContext);
   const id = props.movie.id || props.movie.movieId;
   const savedMovies = props.savedMovies || [];
   const trailer = props.movie.trailerLink || props.movie.trailer
-  const isLiked = savedMovies.some(item => item.movieId === id && item.owner === currentUser.id);
+  const isLiked = savedMovies.some(item => item.movieId === id && item.owner === currentUser._id);
   const movieSavedButtonClassName = (`movies-card__button ${isLiked && 'movies-card__button_like_active'}`);
   const buttonState = props.component === 'movies';
 
