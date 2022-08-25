@@ -1,87 +1,68 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Input } from '../Input/Input';
 import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 import './Profile.css';
+import { useUser } from '../../services/User';
+import { Header } from '../Header/Header';
+import { Form } from '../Form/Form';
 
 export const Profile = (props) => {
-	const formRef = React.useRef();
-	const currentUser = React.useContext(CurrentUserContext);
+	const { user, updateUser, logout } = useUser();
+	const [form, setForm] = React.useState({name: user.name, email: user.email});
+	const [isButtonDisabled, setIsButtonDisabled] = React.useState(true);
+	const formRef = useRef();
 
-	const [name, setName] = React.useState('');
-	const [email, setEmail] = React.useState('');
-	const [isButtonDisabled, setIsButtonDisabled] = React.useState(false)
-	const buttonClassName = `profile__button ${(isButtonDisabled || props.isFormDisabled) && "profile__button_disabled"}`
+  function handleForm(e) {
+    setForm(oldForm => ({...oldForm, [e.target.name]: e.target.value}));
 
-	function handleName(e) {
-		setName(e.target.value);
-	}
-
-	function handleEmail(e) {
-		setEmail(e.target.value);
-	}
+    if (e.target.validity.valid && e.target.value !== user[e.target.name]) {
+      setIsButtonDisabled(false);
+    } else {
+      setIsButtonDisabled(true);
+    }
+  }
 
 	function handleSubmit(e) {
 		e.preventDefault();
-		props.onUpdateUser({
-			name: name,
-			email: email,
-		});
+		updateUser(form);
 	}
 
-	React.useEffect(() => {
-		if(formRef.current && formRef.current.checkValidity()
-		  && name !== currentUser.name && email !== currentUser.email) {
-		  setIsButtonDisabled(false);
-		}else{
-		  setIsButtonDisabled(true);
-		}
-	  })
-
-	React.useEffect(() => {
-		props.onIsHiddenFooter(false)
-		return () => {
-			props.onIsHiddenFooter(true)
-		}
-	}, [])
-
 	return (
-		<div className="profile">
-			<h1 className="profile__title">Привет, {currentUser.name}!</h1>
-			<form ref={formRef} className="profile__form" onSubmit={handleSubmit}>
-				<div className="profile__wrapper">
-					<Input
-						className="profile__input"
-						classNameError="profile__input_error"
-						type="text"
-            minLength="2"
-						maxLength="30" 
-            placeholder={currentUser.name}
-						value={name}
-						onChange={handleName}
-            isFormDisabled={props.isFormDisabled} />
-					<label className="profile__label">Имя</label>
-				</div>
-				<div className="profile__wrapper">
-					<Input
-						className="profile__input profile__input_email"
-            classNameError="profile__input_error"
-						type="email" 
-            minLength="2"
-						maxLength="30"
-						placeholder={currentUser.email}
-						value={email}
-						onChange={handleEmail}
-            isFormDisabled={props.isFormDisabled} />
-					<label className="profile__label">Email</label>
-				</div>
-				<button 
-          className="profile__button" 
-          type="submit"
-          disabled={isButtonDisabled}
-          >Редактировать
-          </button>
-			</form>
-			<button to="/signin" className="profile__link" onClick={props.onSignOut}>Выйти из аккаунта</button>
-		</div>
+		<>
+			<Header isAuth={user} />
+			<div className="profile">
+				<h1 className="profile__title">Привет, {user.name}!</h1>
+				<Form ref={formRef} className="profile__form" disabled={isButtonDisabled} typeButton="Редактировать" onSubmit={handleSubmit}>
+					<div className="profile__wrapper">
+						<Input
+							className="profile__input"
+							classNameError="profile__input_error"
+							type="text"
+							minLength="2"
+							maxLength="30"
+							name="name"
+							value={form.name}
+							required
+							onChange={handleForm}
+						/>
+						<label className="profile__label">Имя</label>
+					</div>
+					<div className="profile__wrapper">
+						<Input
+							className="profile__input profile__input_email"
+							classNameError="profile__input_error"
+							type="email"
+							minLength="2"
+							maxLength="30"
+							name="email"
+							value={form.email}
+							onChange={handleForm}
+							/>
+						<label className="profile__label">Email</label>
+					</div>
+				</Form>
+				<button to="/signin" className="profile__link" onClick={logout}>Выйти из аккаунта</button>
+			</div>
+		</>
 	);
 }

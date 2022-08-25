@@ -1,6 +1,6 @@
 import "./App.css";
 import { Main } from "../Main/Main";
-import { Movies } from "../Movies/Movies";
+import Movies from "../Movies/Movies";
 import { SavedMovies } from "../SavedMovies/SavedMovies";
 import { Profile } from "../Profile/Profile";
 import { Register } from "../Register/Register";
@@ -15,76 +15,27 @@ import * as moviesApi from "../../utils/MoviesApi.js";
 import * as search from "../../utils/search.js";
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { ProtectedRoute } from "../ProtectedRoute/ProtectedRoute";
-import { CurrentUserContext } from "../../contexts/CurrentUserContext";
+import MoviesProvider from "../../services/Movies";
+import { useUser } from "../../services/User";
+import { Preloader } from "../Preloader/Preloader";
 
 function App(props) {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('token'));
   const [isHidden, setIsHidden] = useState(true);
   const [isHiddenFooter, setIsHiddenFooter] = useState(true);
   const [movies, setMovies] = React.useState([]);
-  const [currentUser, setCurrentUser] = useState({ name: "", email: "", id: "" });
   const [savedMovies, setSavedMovies] = useState([]);
-  const [isOpenSuccess, setIsOpenSuccess] = React.useState(false);
-  const [isOpenFail, setIsOpenFail] = React.useState(false);
   const [isPreloader, setIsPreloader] = React.useState(false);
   const [loadedFilms, setLoadedFilms] = React.useState(0);
   const [isNotFoundMovies, setIsNotFoundMovies] = React.useState(false);
   const [isServerMoviesError, setIsServerMoviesError] = React.useState(false);
   const [isComponentSavedMovies, setIsComponentSavedMovies] = React.useState(false);
-  const [isFormDisabled, setIsFormDisabled] = React.useState(false)
   const navigate = useNavigate();
+  const { user, setuser, isAuthCkecked } = useUser();
 
-  function modalClose() {
-    setIsOpenSuccess(false)
-    setIsOpenFail(false)
-  }
 
   function handleLink(boolean) {
     setIsAuth(boolean);
-  }
-
-  function handleRegister(name, email, password) {
-    setIsFormDisabled(true)
-    mainApi.register(name, email, password)
-      .then(handleAuth)
-      .catch((err) => {
-        setIsOpenFail(true);
-        setIsFormDisabled(false)
-        console.log(err);
-      });
-  }
-
-  function handleAuth({data, token}) {
-    setCurrentUser(data);
-    setIsAuth(true)
-    navigate('/movies');
-    localStorage.setItem('token', token);
-    setIsFormDisabled(false);
-  }
-
-  function handleLogin(email, password) {
-    setIsFormDisabled(true)
-    mainApi.authorize(email, password)
-      .then(handleAuth)
-      .catch((err) => {
-        setIsOpenFail(true);
-        setIsFormDisabled(false)
-        console.log(err);
-      });
-  }
-
-  function handleTokenCheck() {
-    if (localStorage.getItem('token')) {
-      mainApi.checkToken()
-        .then((res) => {
-          setCurrentUser(res)
-        })
-        .catch((err) => {
-          console.error(err);
-          localStorage.removeItem('token');
-          setIsAuth(false);
-        });
-    }
   }
 
   function handleSignOut() {
@@ -96,33 +47,18 @@ function App(props) {
     setIsAuth(false);
     setMovies([])
     setSavedMovies([])
-    
+
     navigate('/');
   }
 
-  function handleUpdateUser(data) {
-    setIsFormDisabled(true)
-    mainApi.setUserInfo(data.name, data.email)
-      .then((res) => {
-        setCurrentUser(res);
-        setIsOpenSuccess(true);
-        setIsFormDisabled(false)
-      })
-      .catch((err) => {
-        setIsOpenFail(true)
-        setIsFormDisabled(false)
-        console.log(err);
-      });
-  }
-
   function getFilms() {
-    const movies =  JSON.parse(localStorage.getItem('movies') ?? '[]');
+    const movies = JSON.parse(localStorage.getItem('movies') ?? '[]');
 
     if (movies.length) {
       initMovies(movies);
     } else {
       setIsPreloader(true);
-      setIsFormDisabled(true);
+      // setIsFormDisabled(true);
       setIsNotFoundMovies(false);
 
       moviesApi.getFilms()
@@ -130,7 +66,7 @@ function App(props) {
         .catch((err) => {
           console.log(err);
           setIsServerMoviesError(true)
-          setIsFormDisabled(false)
+          // setIsFormDisabled(false)
         });
     }
   }
@@ -139,7 +75,7 @@ function App(props) {
     setMovies(movies);
     setIsPreloader(false);
     setIsServerMoviesError(false)
-    setIsFormDisabled(false)
+    // setIsFormDisabled(false)
     localStorage.setItem('movies', JSON.stringify(movies));
 
     if (movies.length === 0) {
@@ -147,16 +83,16 @@ function App(props) {
     }
   }
 
-  function getSavedFilms() {    
+  function getSavedFilms() {
     mainApi.getSavedFilms()
-    .then((res) => {
-      setSavedMovies(res)
-    })
-    .catch((err) => {
-      console.log(err);
-      setIsServerMoviesError(true)
-      setIsFormDisabled(false)
-    });
+      .then((res) => {
+        setSavedMovies(res)
+      })
+      .catch((err) => {
+        console.log(err);
+        setIsServerMoviesError(true)
+        // setIsFormDisabled(false)
+      });
   }
 
   function handleSavedMovies() {
@@ -188,8 +124,7 @@ function App(props) {
 
   function handlesavedMovie(movie) {
     const id = movie.id || movie.movieId;
-    console.log(currentUser);
-    const savedMovie = savedMovies.find(item => item.movieId === id && item.owner === currentUser._id);
+    const savedMovie = savedMovies.find(item => item.movieId === id && item.owner === user._id);
     const isLiked = !!savedMovie;
 
     mainApi.changeSaveMovieStatus(savedMovie ?? movie, isLiked)
@@ -219,97 +154,82 @@ function App(props) {
     setFilms(search.searchMoviesByDuration(films))
   }
 
- useEffect(() => {
-    handleTokenCheck();
-  }, []);
+  // useEffect(() => {
+  //   handleTokenCheck();
+  // }, []);
 
-  useEffect(() => {
-    if (isAuth) {
-      getFilms();
-      getSavedFilms();
-    }
-  }, [isAuth]);
+  // useEffect(() => {
+  //   if (isAuth) {
+  //     // getFilms();
+  //     // getSavedFilms();
+  //   }
+  // }, [isAuth]);
+
+  if (!isAuthCkecked) {
+    return (
+      <Preloader />
+    )
+  }
 
   return (
     <div className="app">
-      <CurrentUserContext.Provider value={currentUser}>
-        {isHidden && <Header isAuth={isAuth} />}
-        <Routes>
-          <Route path="/" element={<Main setAuth={handleLink} />} />
-          <Route path="/saved-movies" element={<ProtectedRoute isAuth={isAuth} />}>
-            <Route path="" element={
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route path="/signin" element={<ProtectedRoute isAuth={!user} />} >
+          <Route path="" element={<Login />} />
+        </Route>
+        <Route path="/signup" element={<ProtectedRoute isAuth={!user} />}>
+          <Route path="" element={<Register />} />
+        </Route>
+        <Route path="/profile" element={<ProtectedRoute isAuth={user} />}>
+          <Route path="" element={<Profile />} />
+        </Route>
+
+        {/* <Route path="/saved-movies" element={<ProtectedRoute isAuth={user} />}>
+          <Route path="" element={
+            <Movies
+              movies={savedMovies}
+              onHandleMovies={handleSavedMovies}
+              onHandleMovieButton={handleDeleteSavedMovie}
+              onGetFilms={findSavedMovies}
+              onFindByDuration={findByDuration}
+              onSetMovies={setSavedMovies}
+              isLoading={isPreloader}
+              isNotFoundMovies={isNotFoundMovies}
+              isServerMoviesError={isServerMoviesError}
+              onComponentSavedMovies={setIsComponentSavedMovies}
+              onLoadedFilms={setLoadedFilms}
+              onIsNotFoundMovies={setIsNotFoundMovies}
+            />
+          } />
+        </Route>
+        <Route path="/movies" element={<ProtectedRoute isAuth={user} />}>
+          <Route path="" element={
+            <MoviesProvider>
               <Movies
-                movies={savedMovies}
-                onHandleMovies={handleSavedMovies}
-                onHandleMovieButton={handleDeleteSavedMovie}
-                onGetFilms={findSavedMovies}
-                onFindByDuration={findByDuration}
-                onSetMovies={setSavedMovies}
-                isLoading={isPreloader}
-                isNotFoundMovies={isNotFoundMovies}
-                isServerMoviesError={isServerMoviesError}
-                onComponentSavedMovies={setIsComponentSavedMovies}
-                onLoadedFilms={setLoadedFilms}
-                onIsNotFoundMovies={setIsNotFoundMovies}
+              // onGetFilms={findFilms}
+              // movies={movies}
+              // onSetMovies={setMovies}
+              // onHandleMovieButton={handlesavedMovie}
+              // savedMovies={savedMovies}
+              // onFindByDuration={findByDuration}
+              // isLoading={isPreloader}
+              // onLoadedFilms={setLoadedFilms}
+              // loadedFilms={loadedFilms}
+              // isNotFoundMovies={isNotFoundMovies}
+              // onIsNotFoundMovies={setIsNotFoundMovies}
+              // isServerMoviesError={isServerMoviesError}
+              // isFormDisabled={isFormDisabled}
               />
-            } />
-          </Route>
-          <Route path="/movies" element={<ProtectedRoute isAuth={isAuth} />}>
-            <Route path="" element={
-              <Movies
-                // onGetFilms={findFilms}
-                movies={movies}
-                onSetMovies={setMovies}
-                onHandleMovieButton={handlesavedMovie}
-                savedMovies={savedMovies}
-                onFindByDuration={findByDuration}
-                isLoading={isPreloader}
-                onLoadedFilms={setLoadedFilms}
-                loadedFilms={loadedFilms}
-                isNotFoundMovies={isNotFoundMovies}
-                onIsNotFoundMovies={setIsNotFoundMovies}
-                isServerMoviesError={isServerMoviesError}
-                isFormDisabled={isFormDisabled}
-              />
-            } />
-          </Route>
-          <Route path="/profile" element={<ProtectedRoute isAuth={isAuth} />}>
-            <Route path="" element={
-              <Profile
-                onIsHiddenFooter={setIsHiddenFooter}
-                onSignOut={handleSignOut}
-                onUpdateUser={handleUpdateUser}
-                isFormDisabled={isFormDisabled}
-              />
-            } />
-
-          </Route>
-          <Route path="/signup" element={<Register
-            onIsHidden={setIsHidden}
-            onRegister={handleRegister}
-            isFormDisabled={isFormDisabled} />}>
-
-          </Route>
-          <Route path="/signin" element={<Login
-            onIsHidden={setIsHidden}
-            onLogin={handleLogin}
-            isFormDisabled={isFormDisabled}
-          />}>
-
-          </Route>
-          <Route path="*" element={<NotFound onIsHidden={setIsHidden} />}>
-          </Route>
-        </Routes>
-        {isHidden && isHiddenFooter && <Footer />}
-      </CurrentUserContext.Provider>
-      <InfoToolTip
-        title="Редактирование профиля прошло успешно"
-        isOpen={isOpenSuccess}
-        onClose={modalClose} />
-      <InfoToolTip
-        title="Произошла ошибка"
-        isOpen={isOpenFail}
-        onClose={modalClose} />
+            </MoviesProvider>
+          } />
+        </Route>
+        
+        
+        
+        <Route path="*" element={<NotFound onIsHidden={setIsHidden} />}>
+        </Route> */}
+      </Routes>
     </div>
   )
 }
