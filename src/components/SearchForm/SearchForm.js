@@ -17,8 +17,7 @@ export const SearchForm = (props) => {
 	return (
 		<section className="search">
 			<form className="search__form" onSubmit={handleSearch}>
-				<input className="search__input" type="search" placeholder="Фильм" disabled={props.isFormDisabled} onChange={handleKeyValue} value={keyValue}></input>
-        <div className="search__icon"></div>
+				<input className="search__input search__img" type="search" placeholder="Фильм" disabled={props.isFormDisabled} onChange={handleKeyValue} value={keyValue}></input>
 				<button className={`search__button ${props.isFormDisabled && "search__button_disabled"}`} disabled={props.isFormDisabled} type="submit"></button>
         <div className="search__vert-line"></div>
 				<div className="search__wrapper">

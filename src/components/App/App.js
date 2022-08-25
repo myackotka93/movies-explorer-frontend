@@ -97,7 +97,7 @@ function App(props) {
     setMovies([])
     setSavedMovies([])
     
-    navigate('/signin');
+    navigate('/');
   }
 
   function handleUpdateUser(data) {
@@ -152,6 +152,11 @@ function App(props) {
     .then((res) => {
       setSavedMovies(res)
     })
+    .catch((err) => {
+      console.log(err);
+      setIsServerMoviesError(true)
+      setIsFormDisabled(false)
+    });
   }
 
   function handleSavedMovies() {
@@ -214,7 +219,7 @@ function App(props) {
     setFilms(search.searchMoviesByDuration(films))
   }
 
-  React.useEffect(() => {
+ useEffect(() => {
     handleTokenCheck();
   }, []);
 
