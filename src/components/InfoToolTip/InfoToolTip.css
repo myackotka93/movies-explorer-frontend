@@ -83,6 +83,7 @@
     text-align: center;
     margin: 32px 0 32px 0;
     max-width: 330px;
+    font-family: 'Inter', Arial, sans-serif, Helvetica;
   }
   
   @media screen and (max-width: 768px) {

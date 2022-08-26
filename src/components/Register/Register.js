@@ -83,7 +83,7 @@ export const Register = (props) => {
             type="password"
             minLength="4"
             maxLength="16"
-            isFormDisabled={disabled}
+            isFormDisabled={isFormSender}
           />
           <label className="form__label">Пароль</label>
         </div>

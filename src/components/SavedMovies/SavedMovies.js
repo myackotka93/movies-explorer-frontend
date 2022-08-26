@@ -1,38 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useMovies } from '../../services/Movies';
+import { useUser } from '../../services/User';
+import { Footer } from '../Footer/Footer';
+import { Header } from '../Header/Header';
 import { MoviesCardList } from '../MoviesCardList/MoviesCardList';
 import { SearchForm } from '../SearchForm/SearchForm';
 
 export const SavedMovies = (props) => {
+  const [form, setForm] = useState({ search: '', filter: false });
+  const { user } = useUser();
+  const { savedMovies, getSavedMovies, toggleSaveMovie, isMovieLoading, isError } = useMovies();
 
-  React.useEffect(() => {
-    if (!localStorage.getItem('keyValueSavedMovies')) {
-			props.onHandleMovies()
-		}
-    props.onComponentSavedMovies(true)
-    props.onIsNotFoundMovies(true)
-		return () => {
-			props.onComponentSavedMovies(false)
-		}
-	}, [])
-  
-	return (
-		<>
-			<SearchForm
-        onGetFilms={props.onGetFilms}
-        movies={props.savedMovies}
-        onFindByDuration={props.onFindByDuration}
-        onSetMovies={props.onSetMovies}
-        keyValue="keyValueSavedMovies" />
+  function handleSearch({ search, filter }) {
+    let isChange = false;
+    if (form.search !== search || form.filter !== filter) {
+      isChange = true;
+    }
+
+    if (isChange) {
+      setForm({ search, filter });
+      getSavedMovies({ search, filter })
+    }
+  }
+
+  function handleMovieButton(movie) {
+    toggleSaveMovie(movie, form);
+  }
+
+  return (
+    <>
+      <Header isAuth={user} />
+      <SearchForm onSearch={handleSearch} />
       <div className="card-list">
         <MoviesCardList
-          movies={props.savedMovies}
-          component='savedMovies'
-          onHandleMovieButton={props.onHandleMovieButton}
-          isLoading={props.isLoading}
-          onLoadedFilms={props.onLoadedFilms}
-					isNotFoundMovies={props.isNotFoundMovies}
-					isServerMoviesError={props.isServerMoviesError} />
+          movies={savedMovies}
+          isLoading={isMovieLoading}
+          isServerMoviesError={isError}
+          onHandleMovieButton={handleMovieButton}
+        />
       </div>
-		</>
-	);
+      <Footer />
+    </>
+  );
 }

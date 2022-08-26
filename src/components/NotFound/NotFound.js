@@ -5,13 +5,6 @@ import { useNavigate } from 'react-router-dom';
 export const NotFound = (props) => {
 	const navigate = useNavigate();
 
-	React.useEffect(() => {
-		props.onIsHidden(false)
-		return () => {
-			props.onIsHidden(true)
-		}
-	}, []);
-
 	function goBack() {
 		navigate(-1);
 	}

@@ -1,57 +1,55 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {  useState } from 'react';
 import { useMovies } from '../../services/Movies';
-import { searchMovies, searchMoviesByDuration } from '../../utils/search';
+import { useUser } from '../../services/User';
+import { Footer } from '../Footer/Footer';
+import { Header } from '../Header/Header';
 import { MoviesCardList } from '../MoviesCardList/MoviesCardList';
 import { SearchForm } from '../SearchForm/SearchForm';
 
+const defaultSearch = localStorage.getItem('search') ?? '';
+const defaultFilter = localStorage.getItem('filter') === 'true' ? true : false;
+
 const Movies = (props) => {
-  // const [searchValue, setSearchValue] = useState('');
-  // const [check, setCheck] = useState(false);
-  const { movies, getMovies, clearMovies } = useMovies();
+  const [form, setForm] = useState({ search: defaultSearch, filter: defaultFilter });
+  const { movies, getMovies, isMovieLoading, toggleSaveMovie, isError } = useMovies();
+  const { user } = useUser();
 
-  useEffect(() => {
-    getMovies();
+  function handleSearch({ search, filter }) {
+    localStorage.setItem('search', search);
+    localStorage.setItem('filter', filter);
 
-    return () => {
-      console.log(movies);
+    let isChange = false;
+    if (form.search !== search || form.filter !== filter) {
+      isChange = true;
     }
-  }, []);
 
-  // function onGetFilms(searchValue) {
-  //   setSearchValue(searchValue)
-  // }
+    if (isChange) {
+      setForm({ search, filter });
+      getMovies({ search, filter })
+    }
+  }
 
-  // function handleCheck(value) {
-  //   setCheck(value)
-  // }
-
-  // const filteredMovies = useMemo(() => {
-  //   const searchableMovies = searchMovies(searchValue, props.movies);
-  //   return check ? searchMoviesByDuration(searchableMovies) : searchableMovies;
-  // }, [props.movies, searchValue, check]);
+  function handleMovieButton(movie) {
+    toggleSaveMovie(movie, form);
+  }
 
   return (
     <>
-      {/* <SearchForm
-        onGetFilms={onGetFilms}
-        onFindByDuration={props.onFindByDuration}
-        movies={props.movies}
-        onSetMovies={props.onSetMovies}
-        isFormDisabled={props.isFormDisabled}
-        handleCheck={handleCheck}
+      <Header isAuth={user} />
+      <SearchForm
+        onSearch={handleSearch}
+        search={defaultSearch}
+        filter={defaultFilter}
       />
 
       <MoviesCardList
-        movies={filteredMovies}
-        onHandleMovieButton={props.onHandleMovieButton}
-        savedMovies={props.savedMovies}
-        component='movies'
-        onSetMovies={props.onSetMovies}
-        isLoading={props.isLoading}
-        onLoadedFilms={props.onLoadedFilms}
-        loadedFilms={props.loadedFilms}
-        isNotFoundMovies={props.isNotFoundMovies}
-        isServerMoviesError={props.isServerMoviesError} /> */}
+        movies={movies}
+        component="movies"
+        isLoading={isMovieLoading}
+        onHandleMovieButton={handleMovieButton}
+        isServerMoviesError={isError}
+      />
+      <Footer />
     </>
   );
 }

@@ -1,28 +1,94 @@
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import * as moviesApi from "../utils/MoviesApi.js";
+import * as mainApi from "../utils/MainApi.js";
+import { searchMovies, searchMoviesByDuration } from "../utils/search.js";
+import { useUser } from "./User.js";
 
 const MoviesContext = React.createContext({});
 
 function MoviesProvider({ children }) {
   const [movies, setMovies] = useState(JSON.parse(localStorage.getItem('movies') ?? '[]'));
+  const [savedMovies, setSavedMovies] = useState([]);
+  const { user } = useUser();
+  const [isMovieLoading, setIsMovieLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
-  function getMovies() {
-    if (!movies.length) {
-      moviesApi.getFilms()
-        .then(initMovies)
-        .catch((err) => {
-          console.log(err);
-        });
-    }
+  function getMovies(form = {}) {
+    setIsMovieLoading(true);
+    setIsError(false);
+    moviesApi.getFilms()
+      .then((movies) => initMovies(movies, form))
+      .catch((err) => {
+        console.log(err);
+        setIsError(true);
+      })
+      .finally(() => {
+        setIsMovieLoading(false);
+      });
   }
 
-  function initMovies(movies) {
-    localStorage.setItem('movies', JSON.stringify(movies));
-    setMovies(movies)
+  function filterMovies(movies, form) {
+    const searchableMovies = searchMovies(form.search, movies);
+    return form.filter ? searchMoviesByDuration(searchableMovies) : searchableMovies;
+  }
+
+  function initMovies(movies, form) {
+    const filteredMovies = filterMovies(movies, form);
+    localStorage.setItem('movies', JSON.stringify(filteredMovies));
+    setMovies(filteredMovies)
+  }
+
+  const getSavedMovies = useCallback((form = {}) => {
+    setIsMovieLoading(true);
+    setIsError(false);
+
+    mainApi.getSavedFilms()
+      .then((res) => {
+        const filteredMovies = filterMovies(res, form);
+        setSavedMovies(filteredMovies);
+      })
+      .catch((err) => {
+        setIsError(true);
+        console.log(err);
+      })
+      .finally(() => {
+        setIsMovieLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    getSavedMovies();
+  }, [getSavedMovies]);
+
+  function toggleSaveMovie(movie, form = {}) {
+    setIsError(false);
+
+    const id = movie.id || movie.movieId;
+    const savedMovie = savedMovies.find(item => item.movieId === id && item.owner === user._id);
+    const isLiked = !!savedMovie;
+
+    mainApi.changeSaveMovieStatus(savedMovie ?? movie, isLiked)
+      .then((newMovie) => {
+        setSavedMovies((films) => {
+          let newFilms = [...films];
+          if (savedMovie) {
+            newFilms = newFilms.filter(film => film.movieId !== savedMovie.movieId)
+          } else {
+            newFilms.push(newMovie);
+          }
+
+          const filteredMovies = filterMovies(newFilms, form);
+          return filteredMovies;
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        setIsError(true);
+      });
   }
 
   return (
-    <MoviesContext.Provider value={{ movies, getMovies }}>
+    <MoviesContext.Provider value={{ movies, getMovies, savedMovies, getSavedMovies, toggleSaveMovie, isMovieLoading, isError }}>
       {children}
     </MoviesContext.Provider>
   )

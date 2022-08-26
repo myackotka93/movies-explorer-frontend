@@ -81,8 +81,8 @@ function UserProvider({ children }) {
     localStorage.removeItem('token');
     localStorage.removeItem('movies');
     localStorage.removeItem('savedMovies');
-    localStorage.removeItem('keyValueSavedMovies');
-    localStorage.removeItem('keyValueMovies');
+    localStorage.removeItem('filter');
+    localStorage.removeItem('search');
     setUser(null);
     navigate('/');
   }
