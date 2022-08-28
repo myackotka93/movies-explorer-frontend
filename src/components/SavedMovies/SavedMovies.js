@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMovies } from '../../services/Movies';
 import { useUser } from '../../services/User';
 import { Footer } from '../Footer/Footer';
@@ -11,16 +11,20 @@ export const SavedMovies = (props) => {
   const { user } = useUser();
   const { savedMovies, getSavedMovies, toggleSaveMovie, isMovieLoading, isError } = useMovies();
 
-  function handleSearch({ search, filter }) {
-    let isChange = false;
-    if (form.search !== search || form.filter !== filter) {
-      isChange = true;
+  useEffect(() => {
+    return () => {
+      getSavedMovies();
     }
+  }, [getSavedMovies]);
 
-    if (isChange) {
-      setForm({ search, filter });
-      getSavedMovies({ search, filter })
-    }
+  function handleSearch(search) {
+    setForm(oldForm => ({ ...oldForm, search }));
+    getSavedMovies({ filter: form.filter, search });
+  }
+
+  function handleFilter(filter) {
+    setForm(oldForm => ({ ...oldForm, filter }));
+    getSavedMovies({ search: form.search, filter });
   }
 
   function handleMovieButton(movie) {
@@ -30,7 +34,7 @@ export const SavedMovies = (props) => {
   return (
     <>
       <Header isAuth={user} />
-      <SearchForm onSearch={handleSearch} />
+      <SearchForm onSearch={handleSearch} onFilter={handleFilter} />
       <div className="card-list">
         <MoviesCardList
           movies={savedMovies}

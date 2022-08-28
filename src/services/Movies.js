@@ -7,17 +7,32 @@ import { useUser } from "./User.js";
 const MoviesContext = React.createContext({});
 
 function MoviesProvider({ children }) {
-  const [movies, setMovies] = useState(JSON.parse(localStorage.getItem('movies') ?? '[]'));
+  const [movies, setMovies] = useState([]);
   const [savedMovies, setSavedMovies] = useState([]);
   const { user } = useUser();
   const [isMovieLoading, setIsMovieLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  function getMovies(form = {}) {
+  const getMovies = useCallback((form = {}) => {
     setIsMovieLoading(true);
     setIsError(false);
+
+    const localMovies = JSON.parse(localStorage.getItem('movies') ?? '[]'); 
+
+    if (localMovies.length) {      
+      const filteredMovies = filterMovies(localMovies, form);
+      setMovies(filteredMovies)
+      setIsMovieLoading(false);
+
+      return;
+    }
+    
     moviesApi.getFilms()
-      .then((movies) => initMovies(movies, form))
+      .then((movies) => {
+        localStorage.setItem('movies', JSON.stringify(movies));
+        const filteredMovies = filterMovies(movies, form);
+        setMovies(filteredMovies)
+      })
       .catch((err) => {
         console.log(err);
         setIsError(true);
@@ -25,17 +40,11 @@ function MoviesProvider({ children }) {
       .finally(() => {
         setIsMovieLoading(false);
       });
-  }
+  }, [])
 
   function filterMovies(movies, form) {
     const searchableMovies = searchMovies(form.search, movies);
     return form.filter ? searchMoviesByDuration(searchableMovies) : searchableMovies;
-  }
-
-  function initMovies(movies, form) {
-    const filteredMovies = filterMovies(movies, form);
-    localStorage.setItem('movies', JSON.stringify(filteredMovies));
-    setMovies(filteredMovies)
   }
 
   const getSavedMovies = useCallback((form = {}) => {
@@ -59,6 +68,7 @@ function MoviesProvider({ children }) {
   useEffect(() => {
     getSavedMovies();
   }, [getSavedMovies]);
+
 
   function toggleSaveMovie(movie, form = {}) {
     setIsError(false);

@@ -35,7 +35,7 @@
     bottom: 2px;
     background-color:  #FFFFFF;
     border: 1px solid #FFFFFF;
-    transition: .4s;
+    transition: transform .4s ease;
     border-radius: 50%;
   }
   

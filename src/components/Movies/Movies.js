@@ -1,4 +1,4 @@
-import React, {  useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMovies } from '../../services/Movies';
 import { useUser } from '../../services/User';
 import { Footer } from '../Footer/Footer';
@@ -6,27 +6,33 @@ import { Header } from '../Header/Header';
 import { MoviesCardList } from '../MoviesCardList/MoviesCardList';
 import { SearchForm } from '../SearchForm/SearchForm';
 
-const defaultSearch = localStorage.getItem('search') ?? '';
-const defaultFilter = localStorage.getItem('filter') === 'true' ? true : false;
 
 const Movies = (props) => {
-  const [form, setForm] = useState({ search: defaultSearch, filter: defaultFilter });
+  const [form, setForm] = useState(null);
   const { movies, getMovies, isMovieLoading, toggleSaveMovie, isError } = useMovies();
   const { user } = useUser();
 
-  function handleSearch({ search, filter }) {
+  useEffect(() => {
+    const defaultSearch = localStorage.getItem('search') ?? '';
+    const defaultFilter = localStorage.getItem('filter') === 'true' ? true : false;
+
+    setForm({search: defaultSearch, filter: defaultFilter});
+  }, []);
+
+  useEffect(() => {
+    if (form) {
+      getMovies(form);
+    }
+  }, [form, getMovies]);
+
+  function handleSearch(search) {
     localStorage.setItem('search', search);
+    setForm(oldForm => ({ ...oldForm, search }));
+  }
+
+  function handleFilter(filter) {
     localStorage.setItem('filter', filter);
-
-    let isChange = false;
-    if (form.search !== search || form.filter !== filter) {
-      isChange = true;
-    }
-
-    if (isChange) {
-      setForm({ search, filter });
-      getMovies({ search, filter })
-    }
+    setForm(oldForm => ({ ...oldForm, filter }));
   }
 
   function handleMovieButton(movie) {
@@ -38,8 +44,9 @@ const Movies = (props) => {
       <Header isAuth={user} />
       <SearchForm
         onSearch={handleSearch}
-        search={defaultSearch}
-        filter={defaultFilter}
+        onFilter={handleFilter}
+        search={form?.search}
+        filter={form?.filter}
       />
 
       <MoviesCardList
