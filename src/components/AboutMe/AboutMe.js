@@ -14,8 +14,8 @@ export const AboutMe = () => {
         <p className="about-me__subtitle">Фронтенд-разработчик, 28 лет</p>
         <p className="about-me__text">Я родилась в городе Дзержинск, но сейчас живу в Санкт-Петербурге. Раньше я работала метрологом на обороннм заводе, но сейчас я заканиваю курс по веб-разработкев Яндексе и хочу быть успешным программистом. На данный момент работаю джуном в Планетарии 1.</p>
         <div className="about-me__links">
-          <a className="about-me__link" href="https://vk.com/myackotka" target="_blank">Вконтакте</a>
-          <a className="about-me__link" href="https://github.com/myackotka93" target="_blank">Github</a>
+          <a className="about-me__link" href="https://vk.com/myackotka" target="_blank" rel="noreferrer">Вконтакте</a>
+          <a className="about-me__link" href="https://github.com/myackotka93" target="_blank" rel="noreferrer">Github</a>
         </div>
         <img className="about-me__photo" src={image} alt="Моя фотография"/>
         </div>

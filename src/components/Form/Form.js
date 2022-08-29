@@ -1,25 +1,27 @@
+import classNames from 'classnames';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Form.css';
 
-export const Form = (props) => {
+export const Form = React.forwardRef((props, formRef) => {
+	const buttonClassName = `form__button ${props.disabled ? 'form__button_disable' : ''}`
 
-	React.useEffect(() => {
-		props.onIsHidden(false)
-		return () => {
-			props.onIsHidden(true)
+	function handleSubmit(e) {
+		e.preventDefault();
+
+		if (props.disabled) {
+			return;
 		}
-	}, [])
+		
+		if (formRef.current && formRef.current.checkValidity()) {
+			props.onSubmit(e);
+		}
+	}
 
 	return (
-		<div className="form">
-			<Link to="/" className="logo"></Link>
-			<h1 className="form__title">{props.title}</h1>
-			<form className="form__container">
-				{props.children}
-				<button className="form__button">{props.typeButton}</button>
-			</form>
-      <p className="form__check">{props.check} <Link to={props.to} className="form__link" >{props.typeLink}</Link></p>
-		</div>
+		<form autoComplete="false" noValidate className={classNames("form__container", props.className)} ref={formRef} onSubmit={handleSubmit}>
+			{props.children}
+			<button className={buttonClassName} disabled={props.disabled} type="submit">{props.typeButton}</button>
+		</form>
 	);
-}
+})

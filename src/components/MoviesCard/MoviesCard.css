@@ -53,7 +53,7 @@
   border: none;
 }
 
-.movies-card__button_save_active {
+.movies-card__button_like_active {
   background-image: url(../../images/button__save_active.svg);
 }
 

@@ -1,33 +1,49 @@
-import React from 'react';
-import { MoviesCard } from '../MoviesCard/MoviesCard';
+import React, { useEffect, useState } from 'react';
+import { useMovies } from '../../services/Movies';
+import { useUser } from '../../services/User';
+import { Footer } from '../Footer/Footer';
+import { Header } from '../Header/Header';
+import { MoviesCardList } from '../MoviesCardList/MoviesCardList';
 import { SearchForm } from '../SearchForm/SearchForm';
-import img1 from "../../images/card1.png";
-import img2 from "../../images/card2.png";
-import img3 from "../../images/card3.png";
 
 export const SavedMovies = (props) => {
-	return (
-		<>
-			<SearchForm />
-			  <div className="card-list">
-			    <div className="card-list__wrapper">
-            <MoviesCard
-              img={img1}
-              title="33 слова о дизайне"
-              time="1ч 47м"
-              isSavedMovies={props.isSavedMovies} />
-            <MoviesCard
-              img={img2}
-              title="33 слова о дизайне»"
-              time="1ч 47м"
-              isSavedMovies={props.isSavedMovies} />
-            <MoviesCard
-              img={img3}
-              title="33 слова о дизайне"
-              time="1ч 47м" 
-              isSavedMovies={props.isSavedMovies} />
-				</div>
+  const [form, setForm] = useState({ search: '', filter: false });
+  const { user } = useUser();
+  const { savedMovies, getSavedMovies, toggleSaveMovie, isMovieLoading, isError } = useMovies();
+
+  useEffect(() => {
+    return () => {
+      getSavedMovies();
+    }
+  }, [getSavedMovies]);
+
+  function handleSearch(search) {
+    setForm(oldForm => ({ ...oldForm, search }));
+    getSavedMovies({ filter: form.filter, search });
+  }
+
+  function handleFilter(filter) {
+    setForm(oldForm => ({ ...oldForm, filter }));
+    getSavedMovies({ search: form.search, filter });
+  }
+
+  function handleMovieButton(movie) {
+    toggleSaveMovie(movie, form);
+  }
+
+  return (
+    <>
+      <Header isAuth={user} />
+      <SearchForm onSearch={handleSearch} onFilter={handleFilter} />
+      <div className="card-list">
+        <MoviesCardList
+          movies={savedMovies}
+          isLoading={isMovieLoading}
+          isServerMoviesError={isError}
+          onHandleMovieButton={handleMovieButton}
+        />
       </div>
-		</>
-	);
+      <Footer />
+    </>
+  );
 }

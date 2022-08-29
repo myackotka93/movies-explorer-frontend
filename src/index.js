@@ -2,16 +2,17 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
-import { App }from './components/App/App';
+import App from './components/App/App';
 import reportWebVitals from './reportWebVitals';
+import UserProvider from './services/User';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <BrowserRouter>
+  <BrowserRouter>
+    <UserProvider>
       <App />
-    </BrowserRouter>
-  </React.StrictMode>
+    </UserProvider>
+  </BrowserRouter>
 );
 
 // If you want to start measuring performance in your app, pass a function

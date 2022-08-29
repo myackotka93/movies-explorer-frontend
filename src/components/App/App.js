@@ -1,54 +1,58 @@
 import "./App.css";
 import { Main } from "../Main/Main";
-import { Movies } from "../Movies/Movies";
+import Movies from "../Movies/Movies";
 import { SavedMovies } from "../SavedMovies/SavedMovies";
 import { Profile } from "../Profile/Profile";
 import { Register } from "../Register/Register";
 import { Login } from "../Login/Login";
 import { NotFound } from "../NotFound/NotFound";
-import { Header } from "../Header/Header";
-import { Footer } from "../Footer/Footer";
 import React from "react";
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+import { ProtectedRoute } from "../ProtectedRoute/ProtectedRoute";
+import MoviesProvider from "../../services/Movies";
+import { useUser } from "../../services/User";
+import { Preloader } from "../Preloader/Preloader";
 
-export const App = () => {
+function App() {
+  const { user, isAuthCkecked } = useUser();
 
-  const [isAuth, setIsAuth] = React.useState(true);
-  const [isSavedMovies, setIsSavedMovies] = React.useState(true);
-  const [isHidden, setIsHidden] = React.useState(true);
-  const [isHiddenFooter, setIsHiddenFooter] = React.useState(true);
-
-  function handleLink(boolean) {
-    setIsAuth(boolean);
-}
+  if (!isAuthCkecked) {
+    return (
+      <Preloader />
+    )
+  }
 
   return (
     <div className="app">
-{isHidden && <Header isAuth={isAuth} />}
-      <Switch>
-        <Route exact path="/">
-          <Main setAuth={handleLink} />
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route path="/signin" element={<ProtectedRoute isAuth={!user} />} >
+          <Route path="" element={<Login />} />
         </Route>
-        <Route path="/movies">
-          <Movies />
+        <Route path="/signup" element={<ProtectedRoute isAuth={!user} />}>
+          <Route path="" element={<Register />} />
         </Route>
-        <Route path="/saved-movies">
-          <SavedMovies isSavedMovies={isSavedMovies} />
+        <Route path="/profile" element={<ProtectedRoute isAuth={user} />}>
+          <Route path="" element={<Profile />} />
         </Route>
-        <Route path="/profile">
-          <Profile onIsHiddenFooter={setIsHiddenFooter} />
+        <Route path="/movies" element={<ProtectedRoute isAuth={user} />}>
+          <Route path="" element={
+            <MoviesProvider>
+              <Movies />
+            </MoviesProvider>
+          } />
         </Route>
-        <Route path="/signup">
-          <Register onIsHidden={setIsHidden} />
-        </Route>
-        <Route path="/signin">
-          <Login onIsHidden={setIsHidden} />
-        </Route>
-        <Route path="*">
-          <NotFound onIsHidden={setIsHidden} />
-        </Route>
-      </Switch>
-      {isHidden && isHiddenFooter && <Footer />}
+        <Route path="/saved-movies" element={<ProtectedRoute isAuth={user} />}>
+          <Route path="" element={
+            <MoviesProvider>
+              <SavedMovies />
+            </MoviesProvider>
+          } />
+        </Route>        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </div>
   )
 }
+
+export default App;

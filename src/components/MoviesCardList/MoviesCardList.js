@@ -1,76 +1,82 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { MoviesCard } from '../MoviesCard/MoviesCard';
+import { Preloader } from '../Preloader/Preloader';
 import './MoviesCardList.css';
-import img1 from "../../images/card1.png";
-import img2 from "../../images/card2.png";
-import img3 from "../../images/card3.png";
-import img4 from "../../images/card4.png";
-import img5 from "../../images/card5.png";
-import img6 from "../../images/card6.png";
-import img7 from "../../images/card7.png";
-import img8 from "../../images/card8.png";
-import img9 from "../../images/card9.png";
-import img10 from "../../images/card10.png";
-import img11 from "../../images/card11.png";
-import img12 from "../../images/card12.png";
+import {
+  MAX_SIZE, MIDDLE_SIZE_START, MOVIES_COUNT_MAX, MOVIES_COUNT_MIDDLE,
+  MOVIES_COUNT_LOW, MOVIES_COUNT_MAX_STEP, MOVIES_COUNT_MIDDLE_STEP
+} from "../../utils/constans";
 
-export const MoviesCardList = () => {
-	return (
-		<section className="card-list">
-			<div className="card-list__wrapper">
-			<MoviesCard
-				img={img1}
-				title="33 слова о дизайне"
-				time="1ч 47м" 
-        isLiked="true" />
-				<MoviesCard
-				img={img2}
-				title="33 слова о дизайне"
-				time="1ч 47м" />
-				<MoviesCard
-				img={img3}
-				title="33 слова о дизайне"
-				time="1ч 47м" />
-				<MoviesCard
-				img={img7}
-				title="33 слова о дизайне"
-				time="1ч 47м" 
-        isLiked="true" />
-				<MoviesCard
-				img={img8}
-				title="33 слова о дизайне"
-				time="1ч 47м" />
-				<MoviesCard
-				img={img9}
-				title="33 слова о дизайне"
-				time="1ч 47м" />
-				<MoviesCard
-				img={img4}
-				title="33 слова о дизайне"
-				time="1ч 47м" />
-				<MoviesCard
-				img={img5}
-				title="33 слова о дизайне"
-				time="1ч 47м"
-        isLiked="true" />
-				<MoviesCard
-				img={img6}
-				title="33 слова о дизайне"
-				time="1ч 47м"/>
-				<MoviesCard
-				img={img10}
-				title="33 слова о дизайне"
-				time="1ч 47м"/>
-				<MoviesCard
-				img={img11}
-				title="33 слова о дизайне"
-				time="1ч 47м"/>
-				<MoviesCard
-				img={img12}
-				title="33 слова о дизайне"
-				time="1ч 47м"/>
-				</div>
-				<button className="card-list__button">Еще</button>
-		</section>
-	);
+export const MoviesCardList = (props) => {
+  const [count, setCount] = React.useState(0);
+  const buttonClassName = `card-list__button ${count >= props.movies.length && "card-list__button_hidden"}`
+
+  const isServerMoviesError = props.isServerMoviesError && props.movies.length === 0;
+
+  const handleMoviesCount = useCallback((width) => {
+    if (props.component === 'savedMovies') {
+      return { count: props.movies.length }
+    }
+    if (width >= MAX_SIZE) {
+      return { count: props.loadedFilms || MOVIES_COUNT_MAX, countStep: MOVIES_COUNT_MAX_STEP }
+    } else if (width >= MIDDLE_SIZE_START && width < MAX_SIZE) {
+      return { count: props.loadedFilms || MOVIES_COUNT_MIDDLE, countStep: MOVIES_COUNT_MIDDLE_STEP }
+    } else {
+      return { count: props.loadedFilms || MOVIES_COUNT_LOW, countStep: MOVIES_COUNT_MIDDLE_STEP }
+    }
+  }, [props.movies, props.component, props.loadedFilms])
+
+  function handleSetCount({ count }) {
+    setCount(count);
+  }
+
+  const getWidth = useCallback(() => {
+    const width = window.innerWidth
+    handleSetCount(handleMoviesCount(width))
+  }, [handleMoviesCount])
+
+  const handleUpdateWidth = useCallback(() => {
+    setTimeout(getWidth, 1000)
+  }, [getWidth])
+
+  function handleButton() {
+    const width = window.innerWidth
+    const { countStep } = handleMoviesCount(width)
+    setCount((state) => state + countStep)
+    props.onLoadedFilms((state) => state + countStep)
+  }
+
+  React.useEffect(() => {
+    window.addEventListener("resize", handleUpdateWidth)
+    return () => {
+      window.removeEventListener("resize", handleUpdateWidth)
+    }
+  }, [handleUpdateWidth])
+
+  React.useEffect(() => {
+    const width = window.innerWidth;
+    handleSetCount(handleMoviesCount(width))
+  }, [props.movies, handleMoviesCount])
+
+  return (
+    <section className="card-list">
+      {props.isLoading && <Preloader />}
+      {!props.isLoading && !props.movies.length && <p className="card-list__error-message">Ничего не найдено.</p>}
+      {isServerMoviesError && <p className="card-list__error-message">Во время запроса произошла
+        ошибка. Возможно,проблема с соединением или сервер недоступен.
+        Подождите немного и попробуйте ещё раз.</p>}
+      <div className="card-list__wrapper">
+        {props.movies.slice(0, count).map((movie) => (
+          <MoviesCard
+            key={movie._id ?? movie.id ?? movie.movieId}
+            movie={movie}
+            onHandleMovieButton={props.onHandleMovieButton}
+            savedMovies={props.savedMovies}
+            component={props.component} />
+        ))}
+      </div>
+      {props.movies.slice(count).length >= 1 && <button className={buttonClassName} onClick={handleButton}>Еще</button>}
+
+    </section>
+  );
 }

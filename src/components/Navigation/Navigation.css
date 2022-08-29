@@ -37,11 +37,12 @@
 
 .navigation__link_active {
   font-weight: 500;
+  border-bottom: 1px solid #000;
 }
 
-.navigation__link:last-of-type {
+/* .navigation__link:last-of-type {
   margin-right: 0;
-}
+} */
 
 .navigation__link_type_button {
   width: 76px;
@@ -61,6 +62,10 @@
   }
 }
 
+.navigation__link_account {
+  border-bottom: 1px solid #000;
+}
+
 .navigation__wrapper {
   display: flex;
   justify-content: space-between;
@@ -70,7 +75,7 @@
   justify-content: flex-end;
 }
 
-@media screen and (max-width: 1279px) and (min-width: 300px){
+@media screen and (max-width: 767px) and (min-width: 300px){
   .navigation__wrapper_hidden {
     display: none;
   }
